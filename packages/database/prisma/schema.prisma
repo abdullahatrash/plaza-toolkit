@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// User model with role-based access
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          String    // UserRole: OFFICER, ANALYST, PROSECUTOR, ADMIN, CITIZEN
+  department    String?
+  badge         String?
+  rank          String?
+  phone         String?
+  avatarUrl     String?
+  isActive      Boolean   @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  reports       Report[]      @relation("ReportAuthor")
+  assignedReports Report[]    @relation("ReportAssignee")
+  cases         Case[]        @relation("CaseOwner")
+  caseTeam      Case[]        @relation("CaseTeam")
+  evidence      Evidence[]
+  notes         Note[]
+  activities    Activity[]
+  notifications Notification[]
+  analysisJobs  AnalysisJob[]
+
+  @@index([email])
+  @@index([role])
+}
+
+// Report model for incident reports
+model Report {
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  type            String        // ReportType: POLLUTION, WILDLIFE, WATER_QUALITY, etc.
+  status          String        // ReportStatus: DRAFT, SUBMITTED, UNDER_REVIEW, etc.
+  priority        String        // Priority: LOW, MEDIUM, HIGH, CRITICAL
+  location        String
+  latitude        Float
+  longitude       Float
+  address         String?
+  incidentDate    DateTime
+  reportNumber    String        @unique
+
+  // Relations
+  authorId        String
+  author          User          @relation("ReportAuthor", fields: [authorId], references: [id])
+  assigneeId      String?
+  assignee        User?         @relation("ReportAssignee", fields: [assigneeId], references: [id])
+  caseId          String?
+  case            Case?         @relation(fields: [caseId], references: [id])
+
+  // Data fields
+  tags            String?       // JSON array of tags
+  metadata        String?       // JSON object for additional data
+  weatherData     String?       // JSON weather conditions
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  photos          Photo[]
+  evidence        Evidence[]
+  notes           Note[]
+  activities      Activity[]
+  analysisJobs    AnalysisJob[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([authorId])
+  @@index([assigneeId])
+  @@index([caseId])
+}
+
+
+// Photo model for report images
+model Photo {
+  id          String   @id @default(cuid())
+  url         String
+  thumbnail   String?
+  caption     String?
+  latitude    Float?
+  longitude   Float?
+  takenAt     DateTime?
+  reportId    String
+  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  // AI Analysis
+  aiAnalysis  String?  // JSON object with AI detection results
+
+  @@index([reportId])
+}
+
+// Case model for investigations
+model Case {
+  id           String      @id @default(cuid())
+  caseNumber   String      @unique
+  title        String
+  description  String
+  status       String      // CaseStatus: OPEN, IN_PROGRESS, PENDING_REVIEW, etc.
+  priority     String      // Priority: LOW, MEDIUM, HIGH, CRITICAL
+  type         String
+
+  // Relations
+  ownerId      String
+  owner        User        @relation("CaseOwner", fields: [ownerId], references: [id])
+  team         User[]      @relation("CaseTeam")
+
+  // Data
+  summary      String?
+  findings     String?     // JSON object
+  legalStatus  String?
+  courtDate    DateTime?
+  verdict      String?
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  closedAt     DateTime?
+
+  // Relations
+  reports      Report[]
+  evidence     Evidence[]
+  notes        Note[]
+  activities   Activity[]
+
+  @@index([status])
+  @@index([ownerId])
+}
+
+
+// Evidence model
+model Evidence {
+  id           String       @id @default(cuid())
+  type         String       // EvidenceType: PHOTO, VIDEO, DOCUMENT, SAMPLE, etc.
+  title        String
+  description  String?
+  fileUrl      String?
+  fileType     String?
+  fileSize     Int?
+  hash         String?      // For chain of custody
+
+  // Chain of custody
+  collectedBy  String
+  collector    User         @relation(fields: [collectedBy], references: [id])
+  collectedAt  DateTime
+  location     String?
+  latitude     Float?
+  longitude    Float?
+
+  // Relations
+  reportId     String?
+  report       Report?      @relation(fields: [reportId], references: [id])
+  caseId       String?
+  case         Case?        @relation(fields: [caseId], references: [id])
+
+  // Metadata
+  metadata     String?      // JSON object
+  tags         String?      // JSON array
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([reportId])
+  @@index([caseId])
+  @@index([collectedBy])
+}
+
+
+// Note model for comments and observations
+model Note {
+  id          String   @id @default(cuid())
+  content     String
+  type        String   // NoteType: COMMENT, OBSERVATION, UPDATE, ACTION, DECISION
+  isInternal  Boolean  @default(false)
+
+  // Relations
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  reportId    String?
+  report      Report?  @relation(fields: [reportId], references: [id])
+  caseId      String?
+  case        Case?    @relation(fields: [caseId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([reportId])
+  @@index([caseId])
+}
+
+
+// Activity log model
+model Activity {
+  id          String       @id @default(cuid())
+  type        String       // ActivityType: CREATE, UPDATE, DELETE, ASSIGN, etc.
+  action      String
+  description String?
+  metadata    String?      // JSON object with additional data
+
+  // Relations
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  reportId    String?
+  report      Report?      @relation(fields: [reportId], references: [id])
+  caseId      String?
+  case        Case?        @relation(fields: [caseId], references: [id])
+
+  createdAt   DateTime     @default(now())
+
+  @@index([userId])
+  @@index([reportId])
+  @@index([caseId])
+  @@index([type])
+}
+
+
+// AI Analysis Job model
+model AnalysisJob {
+  id           String         @id @default(cuid())
+  type         String         // AnalysisType: POLLUTION_DETECTION, WILDLIFE_IDENTIFICATION, etc.
+  status       String         // AnalysisStatus: QUEUED, PROCESSING, COMPLETED, etc.
+  priority     String         @default("MEDIUM") // Priority: LOW, MEDIUM, HIGH, CRITICAL
+
+  // Input
+  reportId     String?
+  report       Report?        @relation(fields: [reportId], references: [id])
+  inputData    String?        // JSON object with analysis parameters
+
+  // Processing
+  startedAt    DateTime?
+  completedAt  DateTime?
+  progress     Int            @default(0)
+
+  // Results
+  result       String?        // JSON object with analysis results
+  confidence   Float?
+  detections   String?        // JSON array of detected items
+  suggestions  String?        // JSON array of recommendations
+
+  // XAI Explanation
+  explanation  String?        // JSON object with explainable AI data
+  heatmapUrl   String?
+
+  // Relations
+  requestedBy  String
+  requester    User          @relation(fields: [requestedBy], references: [id])
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([status])
+  @@index([reportId])
+  @@index([requestedBy])
+}
+
+
+// Notification model
+model Notification {
+  id          String           @id @default(cuid())
+  type        String           // NotificationType: INFO, SUCCESS, WARNING, ERROR, etc.
+  title       String
+  message     String
+  link        String?
+  isRead      Boolean          @default(false)
+
+  // Relations
+  userId      String
+  user        User             @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime         @default(now())
+  readAt      DateTime?
+
+  @@index([userId])
+  @@index([isRead])
+}
+

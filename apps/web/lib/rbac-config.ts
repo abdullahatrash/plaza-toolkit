@@ -68,7 +68,21 @@ const officerNavigation: NavItem[] = [
     label: 'Reports',
     href: '/dashboard/reports',
     icon: FileText,
-    description: 'Manage incident reports'
+    description: 'Manage incident reports',
+    children: [
+      {
+        id: 'assigned-reports',
+        label: 'Assigned to Me',
+        href: '/dashboard/reports/assigned',
+        icon: Shield
+      },
+      {
+        id: 'all-reports',
+        label: 'All Reports',
+        href: '/dashboard/reports',
+        icon: FileText
+      }
+    ]
   },
   {
     id: 'my-cases',

@@ -1013,7 +1013,7 @@ export const notificationApi = {
 // Dashboard Stats API
 export const dashboardApi = {
   async getOfficerStats(userId: string) {
-    const [myReports, assignedReports, recentActivities, notifications] = await Promise.all([
+    const [myReports, assignedReports, activeCases, recentActivities, notifications] = await Promise.all([
       prisma.report.count({
         where: { authorId: userId }
       }),
@@ -1025,6 +1025,16 @@ export const dashboardApi = {
           }
         }
       }),
+      prisma.case.count({
+        where: {
+          team: {
+            some: { id: userId }
+          },
+          status: {
+            in: [CaseStatus.OPEN, CaseStatus.IN_PROGRESS]
+          }
+        }
+      }),
       activityApi.getRecent({ userId, limit: 10 }),
       notificationApi.getUnreadCount(userId)
     ]);
@@ -1032,6 +1042,7 @@ export const dashboardApi = {
     return {
       myReports,
       assignedReports,
+      activeCases,
       recentActivities,
       unreadNotifications: notifications
     };

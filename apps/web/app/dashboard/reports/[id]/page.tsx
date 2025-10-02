@@ -47,6 +47,9 @@ import { ReportStatus, Priority, UserRole } from "@workspace/database";
 import { toast } from "sonner";
 import { StatusTimeline } from "@/components/reports/status-timeline";
 import { AssignOfficerDialog } from "@/components/reports/assign-officer-dialog";
+import { UpdateStatusDialog } from "@/components/reports/update-status-dialog";
+import { CreateCaseDialog } from "@/components/cases/create-case-dialog";
+import { NotesSection } from "@/components/reports/notes-section";
 import { useAuthStore } from "@/lib/stores/auth.store";
 
 interface ReportDetails {
@@ -143,9 +146,14 @@ export default function ReportDetailPage({
   const [updateContent, setUpdateContent] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("");
+  const [updateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
+  const [createCaseDialogOpen, setCreateCaseDialogOpen] = useState(false);
 
   const isCitizen = user?.role === UserRole.CITIZEN;
+  const isOfficer = user?.role === UserRole.OFFICER;
+  const isAnalyst = user?.role === UserRole.ANALYST;
   const isOfficerOrAbove = user?.role && [UserRole.OFFICER, UserRole.ANALYST, UserRole.PROSECUTOR, UserRole.ADMIN].includes(user.role as any);
+  const isAssignedOfficer = report?.assignee?.id === user?.id;
 
   useEffect(() => {
     fetchReport();
@@ -165,7 +173,7 @@ export default function ReportDetailPage({
       }
     } catch (error) {
       console.error("Error fetching report:", error);
-      Toaster.error("Failed to fetch report details");
+      toast.error("Failed to fetch report details");
     } finally {
       setLoading(false);
     }
@@ -186,7 +194,7 @@ export default function ReportDetailPage({
         toast.error("Failed to update status");
       }
     } catch (error) {
-      Toaster.error("Failed to update status");
+      toast.error("Failed to update status");
     }
   };
 
@@ -611,55 +619,65 @@ export default function ReportDetailPage({
             activities={report.activities}
           />
 
+          {/* Investigation Notes */}
+          {!isCitizen && (
+            <NotesSection
+              reportId={report.id}
+              userRole={user?.role as UserRole}
+              canAddNotes={isOfficerOrAbove && (isAnalyst || isAssignedOfficer || user?.role === UserRole.ADMIN)}
+            />
+          )}
+
           {/* Quick Actions - Only for Officers/Analysts/Admins */}
           {isOfficerOrAbove && (
             <Card>
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle>Investigation Actions</CardTitle>
+                {isOfficer && !isAssignedOfficer && (
+                  <CardDescription className="text-yellow-600">
+                    You can view this report but only the assigned officer can update it
+                  </CardDescription>
+                )}
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Update Status</label>
-                  <Select
-                    value={selectedStatus}
-                    onValueChange={setSelectedStatus}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ReportStatus.SUBMITTED}>
-                        Submitted
-                      </SelectItem>
-                      <SelectItem value={ReportStatus.UNDER_REVIEW}>
-                        Under Review
-                      </SelectItem>
-                      <SelectItem value={ReportStatus.IN_PROGRESS}>
-                        In Progress
-                      </SelectItem>
-                      <SelectItem value={ReportStatus.RESOLVED}>
-                        Resolved
-                      </SelectItem>
-                      <SelectItem value={ReportStatus.DISMISSED}>
-                        Dismissed
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    disabled={selectedStatus === report.status}
-                    onClick={handleStatusUpdate}
-                  >
-                    Update Status
-                  </Button>
-                </div>
+              <CardContent className="space-y-3">
+                <Button
+                  variant="default"
+                  className="w-full"
+                  onClick={() => setUpdateStatusDialogOpen(true)}
+                  disabled={isOfficer && !isAssignedOfficer}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Update Status
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => router.push(`/dashboard/evidence/new?reportId=${report.id}`)}
+                  disabled={isOfficer && !isAssignedOfficer}
+                >
+                  <Paperclip className="mr-2 h-4 w-4" />
+                  Upload Evidence
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setCreateCaseDialogOpen(true)}
+                  disabled={isOfficer && !isAssignedOfficer}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Create Case
+                </Button>
+
+                <Separator />
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Update Priority</label>
                   <Select
                     value={selectedPriority}
                     onValueChange={setSelectedPriority}
+                    disabled={isOfficer && !isAssignedOfficer}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -674,19 +692,15 @@ export default function ReportDetailPage({
                   <Button
                     size="sm"
                     className="w-full"
-                    disabled={selectedPriority === report.priority}
+                    disabled={selectedPriority === report.priority || (isOfficer && !isAssignedOfficer)}
                     onClick={handlePriorityUpdate}
                   >
                     Update Priority
                   </Button>
                 </div>
 
-                <Separator />
-
                 <Button variant="outline" className="w-full">
-                  Create Case from Report
-                </Button>
-                <Button variant="outline" className="w-full">
+                  <Download className="mr-2 h-4 w-4" />
                   Generate Report PDF
                 </Button>
               </CardContent>
@@ -714,6 +728,25 @@ export default function ReportDetailPage({
           )}
         </div>
       </div>
+
+      {/* Dialogs */}
+      {report && (
+        <>
+          <UpdateStatusDialog
+            open={updateStatusDialogOpen}
+            onOpenChange={setUpdateStatusDialogOpen}
+            reportId={report.id}
+            currentStatus={report.status as ReportStatus}
+            onSuccess={fetchReport}
+          />
+          <CreateCaseDialog
+            open={createCaseDialogOpen}
+            onOpenChange={setCreateCaseDialogOpen}
+            reportId={report.id}
+            reportTitle={report.title}
+          />
+        </>
+      )}
     </div>
   );
 }

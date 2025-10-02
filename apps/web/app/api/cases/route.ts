@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { caseApi } from '@workspace/lib/db-api';
+import { caseApi, notificationApi, activityApi } from '@workspace/lib/db-api';
 import { verifyAuth } from '@/lib/auth-utils';
-import { CaseStatus, Priority } from '@workspace/database';
+import { CaseStatus, Priority, NotificationType, ActivityType } from '@workspace/database';
+import type { ApiResponse } from '@workspace/types/api';
 
 // GET /api/cases - List all cases with filters
 export async function GET(request: NextRequest) {
@@ -80,11 +81,27 @@ export async function POST(request: NextRequest) {
 
     const newCase = await caseApi.create(caseData);
 
-    return NextResponse.json(newCase, { status: 201 });
+    // Create activity log
+    try {
+      await activityApi.create({
+        type: ActivityType.CREATE,
+        action: 'Created case',
+        description: `Case "${title}" was created`,
+        userId: user.id,
+        caseId: newCase.id
+      });
+    } catch (error) {
+      console.error('Failed to create activity:', error);
+    }
+
+    return NextResponse.json<ApiResponse>(
+      { success: true, data: newCase },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating case:', error);
-    return NextResponse.json(
-      { error: 'Failed to create case' },
+    return NextResponse.json<ApiResponse>(
+      { success: false, error: 'Failed to create case' },
       { status: 500 }
     );
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/with-auth';
 import { reportApi, notificationApi } from '@workspace/lib/db-api';
+import { prisma } from '@workspace/database/client';
 import { UserRole, NotificationType, ReportStatus } from '@workspace/database';
 import type { ApiResponse } from '@workspace/types/api';
 
@@ -195,6 +196,24 @@ export async function PATCH(
         }
       }
     });
+
+    // Create a note if status changed and a note was provided
+    if (statusChanged && body.note) {
+      try {
+        await prisma.note.create({
+          data: {
+            content: body.note,
+            type: 'UPDATE',
+            isInternal: true,
+            reportId: id,
+            authorId: user.id
+          }
+        });
+      } catch (error) {
+        console.error('Failed to create note:', error);
+        // Don't fail the request if note creation fails
+      }
+    }
 
     // Send notification to report author (citizen) if status changed
     if (statusChanged && report.authorId !== user.id) {

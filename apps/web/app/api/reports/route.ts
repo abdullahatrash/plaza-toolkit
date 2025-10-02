@@ -27,21 +27,27 @@ export async function GET(request: NextRequest) {
     const priority = searchParams.get('priority');
     const assigneeId = searchParams.get('assigneeId');
     const authorId = searchParams.get('authorId');
+    const assigned = searchParams.get('assigned');
     const search = searchParams.get('search');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Apply role-based filtering
-    if (user.role === UserRole.OFFICER) {
-      // Officers see their assigned reports and public reports
-      filters.OR = [
-        { assigneeId: user.id },
-        { authorId: user.id },
-        { status: ReportStatus.SUBMITTED }
-      ];
-    } else if (user.role === UserRole.CITIZEN) {
-      // Citizens only see their own reports
-      filters.authorId = user.id;
+    // Handle "assigned=me" filter for officers
+    if (assigned === 'me') {
+      filters.assigneeId = user.id;
+    } else {
+      // Apply role-based filtering
+      if (user.role === UserRole.OFFICER) {
+        // Officers see their assigned reports and public reports
+        filters.OR = [
+          { assigneeId: user.id },
+          { authorId: user.id },
+          { status: ReportStatus.SUBMITTED }
+        ];
+      } else if (user.role === UserRole.CITIZEN) {
+        // Citizens only see their own reports
+        filters.authorId = user.id;
+      }
     }
 
     // Add specific filters if provided
@@ -71,6 +77,7 @@ export async function GET(request: NextRequest) {
             avatarUrl: true
           }
         },
+        photos: true,
         _count: {
           select: {
             evidence: true,
@@ -88,6 +95,17 @@ export async function GET(request: NextRequest) {
 
     // Get total count for pagination
     const total = await reportApi.count({ where: filters });
+
+    // Return just the reports array if assigned=me filter is used
+    if (assigned === 'me') {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: true,
+          data: reports
+        },
+        { status: 200 }
+      );
+    }
 
     return NextResponse.json<ApiResponse>(
       {

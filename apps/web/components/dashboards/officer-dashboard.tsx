@@ -59,90 +59,94 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
   return (
     <>
       {/* Welcome Section */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Officer Dashboard</h1>
-        <p className="text-gray-600 mt-1">Good day, Officer {userName}</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Officer Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Good day, Officer {userName}</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/reports/my')}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              My Reports
-            </CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/reports/my')}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <FileText className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">My Reports</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-3xl font-bold tracking-tight">
               {data?.myReports || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Total submitted</p>
+            <p className="text-xs text-muted-foreground mt-2">Total submitted</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/reports?assigned=me')}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Assigned to Me
-            </CardTitle>
+        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/reports?assigned=me')}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <Briefcase className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Assigned to Me</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-3xl font-bold tracking-tight text-orange-600">
               {data?.assignedReports || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Active assignments</p>
+            <p className="text-xs text-muted-foreground mt-2">Active assignments</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/cases')}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Active Cases
-            </CardTitle>
+        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/cases')}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <Shield className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Active Cases</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-3xl font-bold tracking-tight">
               {data?.activeCases || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Open investigations</p>
+            <p className="text-xs text-muted-foreground mt-2">Open investigations</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Notifications
-            </CardTitle>
+        <Card className="hover:shadow-sm transition-all">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <Activity className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Notifications</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-3xl font-bold tracking-tight">
               {data?.unreadNotifications || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Unread</p>
+            <p className="text-xs text-muted-foreground mt-2">Unread</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Reports by Status */}
       {data?.reportStats?.byStatus && (
-        <Card className="mb-6">
+        <Card className="mb-8">
           <CardHeader>
             <CardTitle>Reports by Status</CardTitle>
             <CardDescription>Current status distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {Object.entries(data.reportStats.byStatus).map(
                 ([status, count]: [string, any]) => (
                   <div
                     key={status}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                    className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/50 cursor-pointer transition-all"
                     onClick={() => router.push(`/dashboard/reports?status=${status}`)}
                   >
                     <span className="text-sm font-medium">
                       {status.replace(/_/g, ' ')}
                     </span>
-                    <Badge className={getStatusColor(status)}>{count}</Badge>
+                    <Badge variant="secondary" className="text-xs">{count}</Badge>
                   </div>
                 )
               )}
@@ -151,41 +155,41 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
         </Card>
       )}
 
-      {/* Recent Reports */}
+      {/* Assigned Reports */}
       {data?.reportStats?.recent && data.reportStats.recent.length > 0 && (
-        <Card className="mb-6">
+        <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Recent Reports</CardTitle>
-                <CardDescription>Latest reports in the system</CardDescription>
+                <CardTitle>My Assigned Reports</CardTitle>
+                <CardDescription>Reports requiring your attention</CardDescription>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push('/dashboard/reports')}
+                onClick={() => router.push('/dashboard/reports/assigned')}
               >
                 View All
               </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {data.reportStats.recent.slice(0, 5).map((report: any) => (
                 <div
                   key={report.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/50 cursor-pointer transition-all"
                   onClick={() => router.push(`/dashboard/reports/${report.id}`)}
                 >
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       {getPriorityIcon(report.priority)}
-                      <h4 className="font-medium">{report.title}</h4>
+                      <h4 className="font-medium truncate">{report.title}</h4>
                     </div>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
-                        {report.location}
+                        <span className="truncate">{report.location}</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
@@ -199,7 +203,9 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
                       )}
                     </div>
                   </div>
-                  <Badge className={getStatusColor(report.status)}>
+                  <Badge
+                    className={`ml-3 text-xs ${getStatusColor(report.status)}`}
+                  >
                     {report.status.replace(/_/g, ' ')}
                   </Badge>
                 </div>
@@ -210,58 +216,58 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
       )}
 
       {/* Quick Actions */}
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>Common tasks and shortcuts</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-6"
+              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
               onClick={() => router.push('/dashboard/map')}
             >
-              <Map className="h-6 w-6 text-blue-600" />
+              <Map className="h-8 w-8" />
               <div className="text-center">
-                <div className="font-medium">Explore Map</div>
-                <div className="text-xs text-gray-500">View incident map</div>
+                <div className="font-semibold">Explore Map</div>
+                <div className="text-xs text-muted-foreground mt-1">View incident map</div>
               </div>
             </Button>
 
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-6"
+              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
               onClick={() => router.push('/dashboard/reports/new')}
             >
-              <FileText className="h-6 w-6 text-green-600" />
+              <FileText className="h-8 w-8" />
               <div className="text-center">
-                <div className="font-medium">New Report</div>
-                <div className="text-xs text-gray-500">Submit incident</div>
+                <div className="font-semibold">New Report</div>
+                <div className="text-xs text-muted-foreground mt-1">Submit incident</div>
               </div>
             </Button>
 
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-6"
+              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
               onClick={() => router.push('/dashboard/cases')}
             >
-              <Briefcase className="h-6 w-6 text-purple-600" />
+              <Briefcase className="h-8 w-8" />
               <div className="text-center">
-                <div className="font-medium">My Cases</div>
-                <div className="text-xs text-gray-500">View investigations</div>
+                <div className="font-semibold">My Cases</div>
+                <div className="text-xs text-muted-foreground mt-1">View investigations</div>
               </div>
             </Button>
 
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-6"
+              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
               onClick={() => router.push('/dashboard/evidence')}
             >
-              <Shield className="h-6 w-6 text-orange-600" />
+              <Shield className="h-8 w-8" />
               <div className="text-center">
-                <div className="font-medium">Evidence</div>
-                <div className="text-xs text-gray-500">Manage evidence</div>
+                <div className="font-semibold">Evidence</div>
+                <div className="text-xs text-muted-foreground mt-1">Manage evidence</div>
               </div>
             </Button>
           </div>
@@ -270,25 +276,28 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
 
       {/* Recent Activity */}
       {data?.recentActivities && data.recentActivities.length > 0 && (
-        <Card>
+        <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              <CardTitle>Recent Activity</CardTitle>
+            </div>
             <CardDescription>Your latest actions and updates</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-1">
               {data.recentActivities.slice(0, 8).map((activity: any) => (
                 <div
                   key={activity.id}
-                  className="flex items-start gap-3 text-sm p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="flex items-start gap-3 text-sm p-3 hover:bg-accent/50 rounded-md transition-colors"
                 >
-                  <Activity className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Clock className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900">{activity.action}</p>
+                    <p className="font-medium">{activity.action}</p>
                     {activity.description && (
-                      <p className="text-gray-600 mt-0.5">{activity.description}</p>
+                      <p className="text-muted-foreground text-xs mt-1">{activity.description}</p>
                     )}
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       {formatRelativeTime(activity.createdAt)}
                     </p>
                   </div>

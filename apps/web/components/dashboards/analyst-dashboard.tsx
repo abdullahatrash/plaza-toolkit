@@ -9,6 +9,7 @@ import {
   CardTitle
 } from '@workspace/ui/components/card';
 import { Button } from '@workspace/ui/components/button';
+import { Badge } from '@workspace/ui/components/badge';
 import {
   Brain,
   FileText,
@@ -30,136 +31,143 @@ export function AnalystDashboard({ data, userName }: AnalystDashboardProps) {
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Data Analyst Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome back, {userName}</p>
+      {/* Welcome Section */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Data Analyst Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Welcome back, {userName}</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <Card className="hover:shadow-sm transition-all">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
               <Clock className="h-4 w-4" />
-              Active Analyses
-            </CardTitle>
+              <CardTitle className="text-sm font-medium">Active Analyses</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-3xl font-bold tracking-tight">
               {data?.activeAnalyses || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">In progress</p>
+            <p className="text-xs text-muted-foreground mt-2">In progress</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Completed
-            </CardTitle>
+        <Card className="hover:shadow-sm transition-all">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <Activity className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-3xl font-bold tracking-tight">
               {data?.completedAnalyses || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">This month</p>
+            <p className="text-xs text-muted-foreground mt-2">This month</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Reports for Review
-            </CardTitle>
+        <Card className="hover:shadow-sm transition-all">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <FileText className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Reports for Review</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-3xl font-bold tracking-tight text-orange-600">
               {data?.assignedReports || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Pending analysis</p>
+            <p className="text-xs text-muted-foreground mt-2">Pending analysis</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Cases Involved
-            </CardTitle>
+        <Card className="hover:shadow-sm transition-all">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 text-muted-foreground mb-2">
+              <Shield className="h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Cases Involved</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-3xl font-bold tracking-tight">
               {data?.casesInvolved || 0}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Active cases</p>
+            <p className="text-xs text-muted-foreground mt-2">Active cases</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="mb-6">
+      {/* Quick Actions */}
+      <Card className="mb-8">
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>Common analysis tasks</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-6"
+              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
               onClick={() => router.push('/dashboard/analysis/new')}
             >
-              <Brain className="h-6 w-6 text-purple-600" />
+              <Brain className="h-8 w-8" />
               <div className="text-center">
-                <div className="font-medium">New Analysis</div>
-                <div className="text-xs text-gray-500">Run AI analysis</div>
+                <div className="font-semibold">New Analysis</div>
+                <div className="text-xs text-muted-foreground mt-1">Run AI analysis</div>
               </div>
             </Button>
 
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-6"
+              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
               onClick={() => router.push('/dashboard/analytics')}
             >
-              <BarChart3 className="h-6 w-6 text-teal-600" />
+              <BarChart3 className="h-8 w-8" />
               <div className="text-center">
-                <div className="font-medium">Analytics</div>
-                <div className="text-xs text-gray-500">View insights</div>
+                <div className="font-semibold">Analytics</div>
+                <div className="text-xs text-muted-foreground mt-1">View insights</div>
               </div>
             </Button>
 
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-6"
+              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
               onClick={() => router.push('/dashboard/analysis/xai')}
             >
-              <Shield className="h-6 w-6 text-blue-600" />
+              <Shield className="h-8 w-8" />
               <div className="text-center">
-                <div className="font-medium">XAI Panel</div>
-                <div className="text-xs text-gray-500">Explainability</div>
+                <div className="font-semibold">XAI Panel</div>
+                <div className="text-xs text-muted-foreground mt-1">Explainability</div>
               </div>
             </Button>
 
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-6"
+              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
               onClick={() => router.push('/dashboard/map')}
             >
-              <Map className="h-6 w-6 text-green-600" />
+              <Map className="h-8 w-8" />
               <div className="text-center">
-                <div className="font-medium">Map View</div>
-                <div className="text-xs text-gray-500">Geospatial data</div>
+                <div className="font-semibold">Map View</div>
+                <div className="text-xs text-muted-foreground mt-1">Geospatial data</div>
               </div>
             </Button>
           </div>
         </CardContent>
       </Card>
 
+      {/* Analysis Queue */}
       <Card>
         <CardHeader>
           <CardTitle>Analysis Queue</CardTitle>
           <CardDescription>Recent and pending AI analysis jobs</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <Brain className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-8 text-muted-foreground">
+            <Brain className="h-12 w-12 mx-auto mb-4 opacity-20" />
             <p>No analysis jobs in queue</p>
             <Button
               variant="outline"

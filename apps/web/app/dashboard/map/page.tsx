@@ -194,13 +194,13 @@ export default function MapExplorePage() {
   };
 
   return (
-    <div className="-m-6 h-[calc(100vh-64px)] flex flex-col bg-gray-50">
+    <div className="-m-6 h-[calc(100vh-64px)] flex flex-col bg-background">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4 flex-shrink-0">
+      <div className="bg-card border-b px-6 py-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Environmental Map</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <h1 className="text-2xl font-bold tracking-tight">Environmental Map</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Real-time environmental incident monitoring
             </p>
           </div>
@@ -219,11 +219,11 @@ export default function MapExplorePage() {
 
       <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Sidebar */}
-        <div className="w-96 bg-white border-r flex flex-col flex-shrink-0 overflow-hidden">
+        <div className="w-96 bg-card border-r flex flex-col flex-shrink-0 overflow-hidden">
           {/* Search */}
           <div className="p-4 border-b">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search locations, report numbers..."
                 value={searchQuery}
@@ -235,45 +235,45 @@ export default function MapExplorePage() {
 
           {/* Stats Cards */}
           <div className="p-4 grid grid-cols-2 gap-3">
-            <Card className="bg-gray-50">
+            <Card className="border bg-card hover:bg-accent/50 transition-colors">
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-gray-600">Total Reports</p>
+                    <p className="text-xs text-muted-foreground">Total Reports</p>
                     <p className="text-xl font-bold">{stats.total}</p>
                   </div>
-                  <Activity className="h-8 w-8 text-gray-400" />
+                  <Activity className="h-8 w-8 text-muted-foreground" />
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-red-50">
+            <Card className="border bg-card hover:bg-accent/50 transition-colors">
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-red-600">Critical</p>
-                    <p className="text-xl font-bold text-red-700">{stats.critical}</p>
+                    <p className="text-xs text-red-600 dark:text-red-400">Critical</p>
+                    <p className="text-xl font-bold text-red-700 dark:text-red-500">{stats.critical}</p>
                   </div>
                   <AlertTriangle className="h-8 w-8 text-red-400" />
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-yellow-50">
+            <Card className="border bg-card hover:bg-accent/50 transition-colors">
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-yellow-600">Investigating</p>
-                    <p className="text-xl font-bold text-yellow-700">{stats.investigating}</p>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400">Investigating</p>
+                    <p className="text-xl font-bold text-yellow-700 dark:text-yellow-500">{stats.investigating}</p>
                   </div>
                   <Eye className="h-8 w-8 text-yellow-400" />
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-green-50">
+            <Card className="border bg-card hover:bg-accent/50 transition-colors">
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-green-600">Resolved</p>
-                    <p className="text-xl font-bold text-green-700">{stats.resolved}</p>
+                    <p className="text-xs text-green-600 dark:text-green-400">Resolved</p>
+                    <p className="text-xl font-bold text-green-700 dark:text-green-500">{stats.resolved}</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-green-400" />
                 </div>
@@ -313,11 +313,11 @@ export default function MapExplorePage() {
                       {selectedReport.data?.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {selectedReport.data?.description}
                   </p>
                   <div className="text-sm space-y-1">
-                    <div className="flex items-center gap-2 text-gray-500">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <MapPin className="h-3 w-3" />
                       {selectedReport.data?.location}
                     </div>
@@ -339,7 +339,7 @@ export default function MapExplorePage() {
             <div className="flex-1 overflow-auto border-t">
               <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-sm text-gray-700">
+                  <h3 className="font-semibold text-sm">
                     Cluster Reports ({clusterReports.length})
                   </h3>
                   <Button
@@ -354,17 +354,17 @@ export default function MapExplorePage() {
                   {clusterReports.map((report) => (
                     <Card
                       key={report.id}
-                      className="cursor-pointer hover:bg-gray-50"
+                      className="cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => setSelectedReport(report)}
                     >
                       <CardContent className="p-3">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <p className="font-medium text-sm">{report.data?.title}</p>
-                            <p className="text-xs text-gray-500 mt-1">{report.data?.location}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{report.data?.location}</p>
                           </div>
                           <Badge
-                            variant={report.data?.priority === Priority.CRITICAL ? 'destructive' : 'outline'}
+                            variant={report.data?.priority === Priority.CRITICAL ? 'destructive' : 'secondary'}
                             className="text-xs"
                           >
                             {report.data?.priority}
@@ -382,22 +382,22 @@ export default function MapExplorePage() {
           {!selectedReport && !clusterReports && (
             <div className="flex-1 overflow-auto border-t">
               <div className="p-4">
-                <h3 className="font-semibold text-sm text-gray-700 mb-3">Recent Reports</h3>
+                <h3 className="font-semibold text-sm mb-3">Recent Reports</h3>
                 <div className="space-y-2">
                   {reports.slice(0, 5).map((report) => (
                     <Card
                       key={report.id}
-                      className="cursor-pointer hover:bg-gray-50"
+                      className="cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => setSelectedReport(report)}
                     >
                       <CardContent className="p-3">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <p className="font-medium text-sm">{report.data?.title}</p>
-                            <p className="text-xs text-gray-500 mt-1">{report.data?.location}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{report.data?.location}</p>
                           </div>
                           <Badge
-                            variant={report.data?.priority === Priority.CRITICAL ? 'destructive' : 'outline'}
+                            variant={report.data?.priority === Priority.CRITICAL ? 'destructive' : 'secondary'}
                             className="text-xs"
                           >
                             {report.data?.priority}
@@ -431,9 +431,9 @@ export default function MapExplorePage() {
           </div>
 
           {/* Map Legend */}
-          <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3 z-[400]">
+          <div className="absolute bottom-4 left-4 bg-card border rounded-lg shadow-lg p-3 z-[400]">
             <div className="flex items-center gap-2 mb-2">
-              <Layers className="h-4 w-4 text-gray-600" />
+              <Layers className="h-4 w-4" />
               <span className="text-sm font-semibold">Report Types</span>
             </div>
             <div className="space-y-1 text-xs">

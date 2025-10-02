@@ -8,7 +8,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 const MapComponent = dynamic(() => import("./map-component"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">
+    <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
       <div className="text-center">
         <Skeleton className="h-12 w-12 rounded-full mx-auto mb-2" />
         <Skeleton className="h-4 w-24" />
@@ -63,7 +63,7 @@ export default function DynamicMap({
 
   if (!isClient) {
     return (
-      <div style={{ height }} className="w-full bg-gray-100 animate-pulse" />
+      <div style={{ height }} className="w-full bg-muted animate-pulse" />
     );
   }
 

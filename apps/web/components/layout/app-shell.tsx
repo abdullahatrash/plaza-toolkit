@@ -13,13 +13,13 @@ export function AppShell({ children }: AppShellProps) {
   const { sidebarCollapsed } = useUiStore();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <TopNav />
       <SideNav />
       <main
         className={cn(
-          'transition-all duration-300',
-          'pt-4 px-4 lg:px-6',
+          'transition-all duration-300 pt-20',
+          'px-4 lg:px-6 pb-8',
           sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
         )}
       >

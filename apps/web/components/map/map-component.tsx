@@ -410,11 +410,11 @@ export default function MapComponent({
                 </Badge>
               </div>
 
-              <p className="text-xs text-gray-600 line-clamp-2">
+              <p className="text-xs text-muted-foreground line-clamp-2">
                 {marker.data?.description || 'No description available'}
               </p>
 
-              <div className="text-xs text-gray-500 space-y-1">
+              <div className="text-xs text-muted-foreground space-y-1">
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
                   {marker.data?.location || 'Unknown location'}
@@ -475,9 +475,9 @@ export default function MapComponent({
     <div className="relative w-full h-full">
       {/* Map Filters */}
       {showFilters && (
-        <div className="absolute top-4 right-4 z-[1001] bg-white rounded-lg shadow-lg p-3 space-y-2">
+        <div className="absolute top-4 right-4 z-[1001] bg-card border rounded-lg shadow-lg p-3 space-y-2">
           <div className="flex items-center gap-2 mb-2">
-            <Filter className="h-4 w-4 text-gray-600" />
+            <Filter className="h-4 w-4" />
             <span className="text-sm font-semibold">Filters</span>
           </div>
 
@@ -521,7 +521,7 @@ export default function MapComponent({
             </SelectContent>
           </Select>
 
-          <div className="text-xs text-gray-500 pt-2 border-t">
+          <div className="text-xs text-muted-foreground pt-2 border-t">
             Showing {filteredMarkers.length} of {markers.length} reports
           </div>
         </div>

@@ -74,10 +74,10 @@ export function SideNav() {
         <Button
           variant={active ? 'secondary' : 'ghost'}
           className={cn(
-            'w-full justify-start gap-2 transition-colors',
-            level > 0 && 'pl-10 text-sm',
-            level === 0 && 'font-medium',
-            active && 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700',
+            'w-full justify-start gap-3 transition-all',
+            level > 0 && 'pl-10 text-sm h-9',
+            level === 0 && 'font-medium h-10',
+            active && 'bg-accent',
             sidebarCollapsed && level === 0 && 'justify-center px-2'
           )}
           onClick={handleClick}
@@ -93,14 +93,14 @@ export function SideNav() {
               <span className="flex-1 text-left truncate">{item.label}</span>
 
               {item.badge && (
-                <Badge variant="secondary" className="ml-auto">
+                <Badge variant="secondary" className="ml-auto text-xs">
                   {item.badge}
                 </Badge>
               )}
 
               {hasChildren && (
                 <ChevronDown className={cn(
-                  'h-4 w-4 flex-shrink-0 transition-transform',
+                  'h-4 w-4 flex-shrink-0 transition-transform duration-200',
                   isExpanded && 'rotate-180'
                 )} />
               )}
@@ -110,7 +110,7 @@ export function SideNav() {
 
         {/* Render children if expanded and not collapsed */}
         {hasChildren && isExpanded && !sidebarCollapsed && (
-          <div className="mt-1 space-y-1">
+          <div className="mt-0.5 space-y-0.5 ml-2 border-l pl-3">
             {item.children!.map((child) => (
               <NavLink key={child.id} item={child} level={1} />
             ))}
@@ -137,7 +137,7 @@ export function SideNav() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] border-r bg-white transition-all duration-300',
+          'fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] border-r bg-background transition-all duration-300',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
           'lg:translate-x-0',
           sidebarCollapsed ? 'w-16' : 'w-64'
@@ -146,13 +146,13 @@ export function SideNav() {
         <div className="flex h-full flex-col">
           {/* Sidebar Header */}
           <div className={cn(
-            "flex items-center border-b p-4",
+            "flex items-center border-b px-3 py-4",
             sidebarCollapsed ? "justify-center" : "justify-between"
           )}>
             {!sidebarCollapsed && (
               <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-blue-600" />
-                <span className="font-semibold text-gray-900">
+                <Shield className="h-5 w-5" />
+                <span className="font-semibold tracking-tight">
                   {roleConfig?.displayName || 'Navigation'}
                 </span>
               </div>
@@ -162,6 +162,7 @@ export function SideNav() {
               size="icon"
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="h-8 w-8"
             >
               <ChevronRight
                 className={cn(
@@ -173,7 +174,7 @@ export function SideNav() {
           </div>
 
           {/* Navigation Items */}
-          <ScrollArea className="flex-1 px-2 py-4">
+          <ScrollArea className="flex-1 px-3 py-4">
             <nav className="space-y-1">
               {navigation.map((item) => (
                 <NavLink key={item.id} item={item} />
@@ -183,8 +184,8 @@ export function SideNav() {
 
           {/* Sidebar Footer */}
           {!sidebarCollapsed && (
-            <div className="border-t p-4">
-              <div className="text-xs text-gray-500">
+            <div className="border-t px-4 py-3">
+              <div className="text-xs text-muted-foreground">
                 <p className="font-medium">PLAZA Toolkit v1.0</p>
                 <p className="mt-1">Environmental Protection</p>
               </div>

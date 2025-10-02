@@ -72,7 +72,7 @@ export function TopNav() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-white shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center px-4 gap-4">
         {/* Mobile Menu Toggle */}
         <Button
@@ -89,13 +89,13 @@ export function TopNav() {
           <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-600 to-green-600 rounded-lg">
             <Shield className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-lg hidden sm:inline">PLAZA</span>
+          <span className="font-bold text-lg hidden sm:inline tracking-tight">PLAZA</span>
         </div>
 
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="flex-1 max-w-md mx-auto">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search reports, cases, users..."
@@ -147,7 +147,7 @@ export function TopNav() {
                 </Avatar>
                 <div className="hidden lg:block text-left">
                   <p className="text-sm font-medium">{user?.name}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
                 <ChevronDown className="h-4 w-4 hidden lg:block" />
               </Button>
@@ -156,9 +156,10 @@ export function TopNav() {
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">{user?.name}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
                   <Badge
-                    className={`${getRoleBadgeColor(user?.role || "")} text-white w-fit mt-1`}
+                    variant="secondary"
+                    className="w-fit mt-1"
                   >
                     {user?.role}
                   </Badge>

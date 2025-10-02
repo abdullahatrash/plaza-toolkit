@@ -1,12 +1,22 @@
-import { Button } from "@workspace/ui/components/button"
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth-middleware';
 
-export default function Page() {
-  return (
-    <div className="flex items-center justify-center min-h-svh">
-      <div className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Hello World</h1>
-        <Button size="sm">Button</Button>
-      </div>
-    </div>
-  )
+export default async function RootPage() {
+  // Check if user is authenticated
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
+  if (token) {
+    // Verify token
+    const payload = await verifyToken(token);
+
+    if (payload) {
+      // User is authenticated, redirect to dashboard
+      redirect('/dashboard');
+    }
+  }
+
+  // User is not authenticated, redirect to login
+  redirect('/login');
 }

@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
         const citizenStats = await reportApi.getStats(user.id, UserRole.CITIZEN);
 
         dashboardData = {
-          ...citizenStats,
+          reportStats: citizenStats,
           role: UserRole.CITIZEN
         };
         break;

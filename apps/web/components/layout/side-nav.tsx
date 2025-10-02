@@ -44,6 +44,22 @@ const navItems: NavItem[] = [
     icon: Home,
     roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN', 'CITIZEN']
   },
+  // Citizen-specific navigation (simplified)
+  {
+    id: 'my-reports',
+    label: 'My Reports',
+    href: '/dashboard/reports/my',
+    icon: FileText,
+    roles: ['CITIZEN']
+  },
+  {
+    id: 'submit-report',
+    label: 'Submit Report',
+    href: '/dashboard/reports/new',
+    icon: AlertTriangle,
+    roles: ['CITIZEN']
+  },
+  // Officer/Admin navigation (full access)
   {
     id: 'reports',
     label: 'Reports',
@@ -59,18 +75,18 @@ const navItems: NavItem[] = [
         roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN']
       },
       {
-        id: 'my-reports',
+        id: 'my-reports-officer',
         label: 'My Reports',
         href: '/dashboard/reports/my',
         icon: FileText,
-        roles: ['OFFICER', 'CITIZEN']
+        roles: ['OFFICER']
       },
       {
-        id: 'new-report',
+        id: 'new-report-officer',
         label: 'New Report',
         href: '/dashboard/reports/new',
         icon: AlertTriangle,
-        roles: ['OFFICER', 'CITIZEN']
+        roles: ['OFFICER']
       }
     ]
   },
@@ -157,8 +173,8 @@ const navItems: NavItem[] = [
   },
   {
     id: 'users',
-    label: 'Users',
-    href: '/users',
+    label: 'User Management',
+    href: '/dashboard/users',
     icon: Users,
     roles: ['ADMIN']
   },

@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import 'leaflet.heat';
+import 'leaflet-draw';
+import 'leaflet-draw/dist/leaflet.draw.css';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, LayersControl, LayerGroup } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card';
@@ -18,7 +21,8 @@ import {
   Layers,
   ZoomIn,
   ZoomOut,
-  Maximize2
+  Maximize2,
+  Flame
 } from 'lucide-react';
 import { ReportType, ReportStatus, Priority } from '@workspace/database';
 import { formatDate, formatRelativeTime } from '@workspace/lib/utils';
@@ -44,6 +48,7 @@ interface MapComponentProps {
   onMarkerClick?: (marker: any) => void;
   onMapClick?: (lat: number, lng: number) => void;
   onAreaSelect?: (bounds: [[number, number], [number, number]]) => void;
+  onClusterClick?: (markers: any[]) => void;
 }
 
 // Map control component for user location
@@ -100,25 +105,25 @@ function LocationControl() {
 
 // Create custom icons for different report types
 const createCustomIcon = (type: string, priority?: string) => {
-  const colors = {
+  const colors: Record<string, string> = {
     [Priority.CRITICAL]: '#EF4444',
     [Priority.HIGH]: '#F97316',
     [Priority.MEDIUM]: '#EAB308',
     [Priority.LOW]: '#6B7280',
   };
 
-  const icons = {
+  const icons: Record<string, string> = {
     [ReportType.POLLUTION]: '🏭',
     [ReportType.WILDLIFE]: '🦅',
     [ReportType.WATER_QUALITY]: '💧',
-    [ReportType.ILLEGAL_DUMPING]: '🗑️',
+    [ReportType.WASTE]: '🗑️',
     [ReportType.DEFORESTATION]: '🌲',
-    [ReportType.CHEMICAL_SPILL]: '☢️',
+    [ReportType.AIR_QUALITY]: '☢️',
     [ReportType.NOISE]: '🔊',
     [ReportType.OTHER]: '📍',
   };
 
-  const color = priority ? colors[priority] || '#6B7280' : '#6B7280';
+  const color = priority ? (colors[priority] || '#6B7280') : '#6B7280';
   const icon = icons[type] || '📍';
 
   return L.divIcon({
@@ -157,6 +162,189 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
   return null;
 }
 
+// Heat map layer component
+function HeatMapLayer({ markers }: { markers: any[] }) {
+  const map = useMap();
+  const heatLayerRef = useRef<L.HeatLayer | null>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
+
+  useEffect(() => {
+    if (!map) return;
+
+    // Wait for map to be fully loaded
+    const onMapLoad = () => {
+      setTimeout(() => setIsMapReady(true), 100);
+    };
+
+    if (map.isLoaded && map.isLoaded()) {
+      onMapLoad();
+    } else {
+      map.on('load', onMapLoad);
+    }
+
+    return () => {
+      map.off('load', onMapLoad);
+    };
+  }, [map]);
+
+  useEffect(() => {
+    if (!map || !isMapReady || markers.length === 0) return;
+
+    // Remove existing heat layer
+    if (heatLayerRef.current) {
+      try {
+        map.removeLayer(heatLayerRef.current);
+      } catch (e) {
+        console.warn('Failed to remove heat layer:', e);
+      }
+      heatLayerRef.current = null;
+    }
+
+    // Create heat map data points [lat, lng, intensity]
+    const heatPoints = markers.map(marker => {
+      const intensity = marker.data?.priority === Priority.CRITICAL ? 1.0 :
+                       marker.data?.priority === Priority.HIGH ? 0.7 :
+                       marker.data?.priority === Priority.MEDIUM ? 0.4 : 0.2;
+      return [marker.position[0], marker.position[1], intensity] as [number, number, number];
+    });
+
+    try {
+      // Create and add heat layer
+      const heatLayer = (L as any).heatLayer(heatPoints, {
+        radius: 25,
+        blur: 35,
+        maxZoom: 17,
+        max: 1.0,
+        gradient: {
+          0.0: 'blue',
+          0.3: 'cyan',
+          0.5: 'lime',
+          0.7: 'yellow',
+          1.0: 'red'
+        }
+      });
+
+      heatLayer.addTo(map);
+      heatLayerRef.current = heatLayer;
+    } catch (e) {
+      console.error('Failed to create heat layer:', e);
+    }
+
+    return () => {
+      if (heatLayerRef.current) {
+        try {
+          map.removeLayer(heatLayerRef.current);
+        } catch (e) {
+          console.warn('Failed to remove heat layer on cleanup:', e);
+        }
+      }
+    };
+  }, [map, isMapReady, markers]);
+
+  return null;
+}
+
+// Draw controls component for area selection
+function DrawControls({ onAreaSelect }: { onAreaSelect?: (bounds: [[number, number], [number, number]]) => void }) {
+  const map = useMap();
+  const drawnItemsRef = useRef<L.FeatureGroup>(new L.FeatureGroup());
+
+  useEffect(() => {
+    if (!map) return;
+
+    const drawnItems = drawnItemsRef.current;
+    map.addLayer(drawnItems);
+
+    // Initialize draw control
+    const drawControl = new L.Control.Draw({
+      position: 'topright',
+      draw: {
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          drawError: {
+            color: '#e1e100',
+            message: '<strong>Error:</strong> Shape edges cannot cross!'
+          },
+          shapeOptions: {
+            color: '#3B82F6',
+            weight: 2,
+            fillOpacity: 0.2
+          }
+        },
+        rectangle: {
+          shapeOptions: {
+            color: '#3B82F6',
+            weight: 2,
+            fillOpacity: 0.2
+          }
+        },
+        circle: {
+          shapeOptions: {
+            color: '#3B82F6',
+            weight: 2,
+            fillOpacity: 0.2
+          }
+        },
+        marker: false,
+        polyline: false,
+        circlemarker: false
+      },
+      edit: {
+        featureGroup: drawnItems,
+        remove: true
+      }
+    });
+
+    map.addControl(drawControl);
+
+    // Handle shape creation
+    map.on(L.Draw.Event.CREATED, (e: any) => {
+      const layer = e.layer;
+      drawnItems.addLayer(layer);
+
+      // Get bounds of the drawn shape
+      if (layer.getBounds && onAreaSelect) {
+        const bounds = layer.getBounds();
+        const boundsTuple: [[number, number], [number, number]] = [
+          [bounds.getSouth(), bounds.getWest()],
+          [bounds.getNorth(), bounds.getEast()]
+        ];
+        onAreaSelect(boundsTuple);
+      } else if (layer.getLatLng && layer.getRadius && onAreaSelect) {
+        // For circles, calculate approximate bounds
+        const center = layer.getLatLng();
+        const radius = layer.getRadius();
+        const latOffset = radius / 111320; // approximate meters to degrees
+        const lngOffset = radius / (111320 * Math.cos(center.lat * Math.PI / 180));
+
+        const boundsTuple: [[number, number], [number, number]] = [
+          [center.lat - latOffset, center.lng - lngOffset],
+          [center.lat + latOffset, center.lng + lngOffset]
+        ];
+        onAreaSelect(boundsTuple);
+      }
+    });
+
+    // Handle shape deletion
+    map.on(L.Draw.Event.DELETED, () => {
+      // Clear selection if all shapes are deleted
+      if (drawnItems.getLayers().length === 0 && onAreaSelect) {
+        onAreaSelect([[-90, -180], [90, 180]]); // Reset to global bounds
+      }
+    });
+
+    return () => {
+      map.removeControl(drawControl);
+      map.removeLayer(drawnItems);
+      map.off(L.Draw.Event.CREATED);
+      map.off(L.Draw.Event.DELETED);
+    };
+  }, [map, onAreaSelect]);
+
+  return null;
+}
+
 export default function MapComponent({
   center,
   zoom,
@@ -168,7 +356,8 @@ export default function MapComponent({
   height,
   onMarkerClick,
   onMapClick,
-  onAreaSelect
+  onAreaSelect,
+  onClusterClick
 }: MapComponentProps) {
   const [filteredMarkers, setFilteredMarkers] = useState(markers);
   const [filterType, setFilterType] = useState<string>('all');
@@ -256,7 +445,25 @@ export default function MapComponent({
     ));
 
     return showClusters ? (
-      <MarkerClusterGroup chunkedLoading>
+      <MarkerClusterGroup
+        chunkedLoading
+        eventHandlers={{
+          clusterclick: (cluster: any) => {
+            if (onClusterClick) {
+              // Get all markers in the clicked cluster
+              const clusterMarkers = cluster.layer.getAllChildMarkers();
+              const markerData = clusterMarkers.map((m: any) => {
+                // Find the original marker data
+                return filteredMarkers.find(fm =>
+                  fm.position[0] === m.getLatLng().lat &&
+                  fm.position[1] === m.getLatLng().lng
+                );
+              }).filter(Boolean);
+              onClusterClick(markerData);
+            }
+          }
+        }}
+      >
         {markerElements}
       </MarkerClusterGroup>
     ) : (
@@ -265,10 +472,10 @@ export default function MapComponent({
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full h-full">
       {/* Map Filters */}
       {showFilters && (
-        <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-3 space-y-2">
+        <div className="absolute top-4 right-4 z-[1001] bg-white rounded-lg shadow-lg p-3 space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <Filter className="h-4 w-4 text-gray-600" />
             <span className="text-sm font-semibold">Filters</span>
@@ -278,13 +485,13 @@ export default function MapComponent({
             <SelectTrigger className="w-40 h-8 text-xs">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999]">
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value={ReportType.POLLUTION}>Pollution</SelectItem>
               <SelectItem value={ReportType.WILDLIFE}>Wildlife</SelectItem>
               <SelectItem value={ReportType.WATER_QUALITY}>Water Quality</SelectItem>
-              <SelectItem value={ReportType.ILLEGAL_DUMPING}>Illegal Dumping</SelectItem>
-              <SelectItem value={ReportType.CHEMICAL_SPILL}>Chemical Spill</SelectItem>
+              <SelectItem value={ReportType.WASTE}>Waste/Dumping</SelectItem>
+              <SelectItem value={ReportType.AIR_QUALITY}>Air Quality</SelectItem>
             </SelectContent>
           </Select>
 
@@ -292,7 +499,7 @@ export default function MapComponent({
             <SelectTrigger className="w-40 h-8 text-xs">
               <SelectValue placeholder="Priority" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999]">
               <SelectItem value="all">All Priorities</SelectItem>
               <SelectItem value={Priority.CRITICAL}>Critical</SelectItem>
               <SelectItem value={Priority.HIGH}>High</SelectItem>
@@ -305,11 +512,11 @@ export default function MapComponent({
             <SelectTrigger className="w-40 h-8 text-xs">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999]">
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value={ReportStatus.SUBMITTED}>Submitted</SelectItem>
               <SelectItem value={ReportStatus.UNDER_REVIEW}>Under Review</SelectItem>
-              <SelectItem value={ReportStatus.INVESTIGATING}>Investigating</SelectItem>
+              <SelectItem value={ReportStatus.IN_PROGRESS}>In Progress</SelectItem>
               <SelectItem value={ReportStatus.RESOLVED}>Resolved</SelectItem>
             </SelectContent>
           </Select>
@@ -353,12 +560,23 @@ export default function MapComponent({
               attribution='&copy; OpenTopoMap'
             />
           </LayersControl.BaseLayer>
+
+          {/* Heat map overlay layer */}
+          {showHeatmap && (
+            <LayersControl.Overlay checked name="Heat Map">
+              <LayerGroup>
+                <HeatMapLayer markers={filteredMarkers} />
+              </LayerGroup>
+            </LayersControl.Overlay>
+          )}
         </LayersControl>
 
-        {renderMarkers()}
+        {/* Only show markers when heatmap is off */}
+        {!showHeatmap && renderMarkers()}
 
         <LocationControl />
         <MapClickHandler onMapClick={onMapClick} />
+        {showDrawControls && <DrawControls onAreaSelect={onAreaSelect} />}
       </MapContainer>
     </div>
   );

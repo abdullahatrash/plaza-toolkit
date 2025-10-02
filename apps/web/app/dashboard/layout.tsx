@@ -13,14 +13,14 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="flex h-[calc(100vh-64px)] pt-16">
+      <div className="flex pt-16">
         <SideNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className={`flex-1 transition-all duration-300 ${
+        <main className={`flex-1 min-h-[calc(100vh-4rem)] transition-all duration-300 overflow-x-hidden ${
           sidebarOpen ? 'lg:ml-64' : 'lg:ml-16'
         }`}>
-          <div className="container mx-auto p-6">
+          <div className="w-full max-w-full p-6 overflow-x-hidden">
             {children}
           </div>
         </main>

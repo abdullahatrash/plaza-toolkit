@@ -88,7 +88,12 @@ model Report {
 // Photo model for report images
 model Photo {
   id          String   @id @default(cuid())
-  url         String
+  url         String?  // Legacy field
+  fileUrl     String?  // New field for file path
+  fileName    String?  // Original file name
+  fileSize    Int?     // File size in bytes
+  mimeType    String?  // MIME type (image/jpeg, etc.)
+  uploadedBy  String?  // User who uploaded the photo
   thumbnail   String?
   caption     String?
   latitude    Float?

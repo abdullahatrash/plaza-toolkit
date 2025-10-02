@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import { userApi } from '@workspace/lib/db-api';
 import type { User } from '@workspace/database';
+import { NextRequest } from 'next/server';
 
 // JWT secret - in production, use environment variable
 const JWT_SECRET = process.env.JWT_SECRET || 'plaza-toolkit-secret-key-change-in-production';
@@ -134,3 +135,21 @@ export const authUtils = {
     }
   },
 };
+
+/**
+ * Verify authentication from NextRequest and return user
+ */
+export async function verifyAuth(request: NextRequest): Promise<Omit<User, 'password'> | null> {
+  try {
+    // Get token from cookie
+    const token = request.cookies.get('token')?.value;
+    if (!token) return null;
+
+    // Verify and get user
+    const user = await authUtils.getUserFromToken(token);
+    return user;
+  } catch (error) {
+    console.error('Auth verification error:', error);
+    return null;
+  }
+}

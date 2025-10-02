@@ -32,9 +32,9 @@ const generateMockReports = (): MapMarker[] => {
         id: '1',
         title: 'Chemical Spill in Hudson River',
         description: 'Large chemical spill detected near pier 45',
-        type: ReportType.CHEMICAL_SPILL,
+        type: ReportType.POLLUTION,
         priority: Priority.CRITICAL,
-        status: ReportStatus.INVESTIGATING,
+        status: ReportStatus.IN_PROGRESS,
         location: 'Hudson River, Pier 45',
         incidentDate: new Date('2024-01-15'),
         reportNumber: 'ENV-2024-0145'
@@ -48,7 +48,7 @@ const generateMockReports = (): MapMarker[] => {
         id: '2',
         title: 'Illegal Dumping Site',
         description: 'Construction debris illegally dumped',
-        type: ReportType.ILLEGAL_DUMPING,
+        type: ReportType.WASTE,
         priority: Priority.HIGH,
         status: ReportStatus.UNDER_REVIEW,
         location: 'Central Park West',
@@ -82,7 +82,7 @@ const generateMockReports = (): MapMarker[] => {
         description: 'Protected birds nesting area disturbed',
         type: ReportType.WILDLIFE,
         priority: Priority.HIGH,
-        status: ReportStatus.INVESTIGATING,
+        status: ReportStatus.IN_PROGRESS,
         location: 'High Line Park',
         incidentDate: new Date('2024-01-12'),
         reportNumber: 'ENV-2024-0142'
@@ -144,7 +144,7 @@ const generateMockReports = (): MapMarker[] => {
           title: `Environmental Incident #${reports.length + 1}`,
           description: 'Automated monitoring alert',
           type: Object.values(ReportType)[Math.floor(Math.random() * 6)],
-          priority: Object.values(Priority)[Math.floor(Math.random() * 4)],
+          priority: Object.values(Priority)[Math.floor(Math.random() * 4)] as Priority,
           status: Object.values(ReportStatus)[Math.floor(Math.random() * 5)],
           location: `Location ${reports.length + 1}`,
           incidentDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
@@ -161,6 +161,7 @@ export default function MapExplorePage() {
   const router = useRouter();
   const [reports, setReports] = useState<MapMarker[]>([]);
   const [selectedReport, setSelectedReport] = useState<MapMarker | null>(null);
+  const [clusterReports, setClusterReports] = useState<MapMarker[] | null>(null);
   const [mapView, setMapView] = useState<'cluster' | 'heat' | 'individual'>('cluster');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -171,6 +172,7 @@ export default function MapExplorePage() {
 
   const handleMarkerClick = (marker: MapMarker) => {
     setSelectedReport(marker);
+    setClusterReports(null);
   };
 
   const handleMapClick = (lat: number, lng: number) => {
@@ -178,18 +180,23 @@ export default function MapExplorePage() {
     console.log('Map clicked at:', lat, lng);
   };
 
+  const handleClusterClick = (markers: MapMarker[]) => {
+    setClusterReports(markers);
+    setSelectedReport(null);
+  };
+
   // Stats calculation
   const stats = {
     total: reports.length,
     critical: reports.filter(r => r.data?.priority === Priority.CRITICAL).length,
-    investigating: reports.filter(r => r.data?.status === ReportStatus.INVESTIGATING).length,
+    investigating: reports.filter(r => r.data?.status === ReportStatus.IN_PROGRESS).length,
     resolved: reports.filter(r => r.data?.status === ReportStatus.RESOLVED).length
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="-m-6 h-[calc(100vh-64px)] flex flex-col bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
+      <div className="bg-white border-b px-6 py-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Environmental Map</h1>
@@ -210,9 +217,9 @@ export default function MapExplorePage() {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Sidebar */}
-        <div className="w-96 bg-white border-r flex flex-col">
+        <div className="w-96 bg-white border-r flex flex-col flex-shrink-0 overflow-hidden">
           {/* Search */}
           <div className="p-4 border-b">
             <div className="relative">
@@ -327,8 +334,52 @@ export default function MapExplorePage() {
             </div>
           )}
 
+          {/* Cluster Reports List */}
+          {!selectedReport && clusterReports && (
+            <div className="flex-1 overflow-auto border-t">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-sm text-gray-700">
+                    Cluster Reports ({clusterReports.length})
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setClusterReports(null)}
+                  >
+                    Clear
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {clusterReports.map((report) => (
+                    <Card
+                      key={report.id}
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => setSelectedReport(report)}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{report.data?.title}</p>
+                            <p className="text-xs text-gray-500 mt-1">{report.data?.location}</p>
+                          </div>
+                          <Badge
+                            variant={report.data?.priority === Priority.CRITICAL ? 'destructive' : 'outline'}
+                            className="text-xs"
+                          >
+                            {report.data?.priority}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Recent Reports List */}
-          {!selectedReport && (
+          {!selectedReport && !clusterReports && (
             <div className="flex-1 overflow-auto border-t">
               <div className="p-4">
                 <h3 className="font-semibold text-sm text-gray-700 mb-3">Recent Reports</h3>
@@ -362,18 +413,22 @@ export default function MapExplorePage() {
         </div>
 
         {/* Map */}
-        <div className="flex-1 relative">
-          <DynamicMap
-            center={[40.7580, -73.9855]}
-            zoom={12}
-            markers={reports}
-            showClusters={mapView === 'cluster'}
-            showHeatmap={mapView === 'heat'}
-            showFilters={true}
-            height="100%"
-            onMarkerClick={handleMarkerClick}
-            onMapClick={handleMapClick}
-          />
+        <div className="flex-1 relative h-full">
+          <div className="absolute inset-0">
+            <DynamicMap
+              center={[40.7580, -73.9855]}
+              zoom={12}
+              markers={reports}
+              showClusters={mapView === 'cluster'}
+              showHeatmap={mapView === 'heat'}
+              showDrawControls={false}
+              showFilters={true}
+              height="100%"
+              onMarkerClick={handleMarkerClick}
+              onMapClick={handleMapClick}
+              onClusterClick={handleClusterClick}
+            />
+          </div>
 
           {/* Map Legend */}
           <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3 z-[400]">

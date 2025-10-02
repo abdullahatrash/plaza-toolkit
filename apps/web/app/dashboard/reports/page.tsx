@@ -160,8 +160,36 @@ export default function ReportsPage() {
     );
   };
 
+  const exportToCSV = () => {
+    const headers = ["ID", "Title", "Type", "Status", "Priority", "Author", "Created Date", "Location"];
+    const csvData = filteredReports.map(report => [
+      report.id.substring(0, 8),
+      report.title,
+      report.type.replace("_", " "),
+      report.status.replace("_", " "),
+      report.priority,
+      report.author.name,
+      format(new Date(report.createdAt), "MMM dd, yyyy"),
+      report.location || "N/A"
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...csvData.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `reports-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast.success("Reports exported successfully");
+  };
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Reports Management</h1>
         <Button onClick={() => router.push("/dashboard/reports/new")}>
@@ -170,13 +198,13 @@ export default function ReportsPage() {
         </Button>
       </div>
 
-      <Card>
+      <Card className="w-full overflow-hidden">
         <CardHeader>
           <CardTitle>All Reports</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4 mb-6">
-            <div className="flex gap-4">
+        <CardContent className="overflow-x-hidden">
+          <div className="flex flex-col gap-4 mb-6 w-full">
+            <div className="flex flex-wrap gap-4 w-full">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -245,27 +273,27 @@ export default function ReportsPage() {
                   <SelectItem value={Priority.LOW}>Low</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={exportToCSV} title="Export to CSV">
                 <Download className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Reporter</TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Evidence</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="whitespace-nowrap">ID</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[200px]">Title</TableHead>
+                  <TableHead className="whitespace-nowrap">Type</TableHead>
+                  <TableHead className="whitespace-nowrap">Status</TableHead>
+                  <TableHead className="whitespace-nowrap">Priority</TableHead>
+                  <TableHead className="whitespace-nowrap">Reporter</TableHead>
+                  <TableHead className="whitespace-nowrap">Assigned To</TableHead>
+                  <TableHead className="whitespace-nowrap">Location</TableHead>
+                  <TableHead className="whitespace-nowrap">Date</TableHead>
+                  <TableHead className="whitespace-nowrap">Evidence</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -287,23 +315,23 @@ export default function ReportsPage() {
                       key={report.id}
                       className="cursor-pointer hover:bg-muted/50"
                     >
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium whitespace-nowrap">
                         {report.id.substring(0, 8)}
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-[200px]">
+                        <div className="min-w-[200px] max-w-[300px]">
                           <p className="font-medium truncate">{report.title}</p>
                           <p className="text-sm text-muted-foreground truncate">
                             {report.description}
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell>{getTypeBadge(report.type)}</TableCell>
-                      <TableCell>{getStatusBadge(report.status)}</TableCell>
-                      <TableCell>{getPriorityBadge(report.priority)}</TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">{getTypeBadge(report.type)}</TableCell>
+                      <TableCell className="whitespace-nowrap">{getStatusBadge(report.status)}</TableCell>
+                      <TableCell className="whitespace-nowrap">{getPriorityBadge(report.priority)}</TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
+                          <Avatar className="h-8 w-8 flex-shrink-0">
                             <AvatarImage
                               src={report.author.avatarUrl || undefined}
                             />
@@ -319,10 +347,10 @@ export default function ReportsPage() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         {report.assignee ? (
                           <div className="flex items-center gap-2">
-                            <Avatar className="h-8 w-8">
+                            <Avatar className="h-8 w-8 flex-shrink-0">
                               <AvatarImage
                                 src={report.assignee.avatarUrl || undefined}
                               />
@@ -343,12 +371,12 @@ export default function ReportsPage() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <span className="text-sm">
                           {report.location || "No location"}
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <span className="text-sm">
                           {format(
                             new Date(report.incidentDate),
@@ -356,7 +384,7 @@ export default function ReportsPage() {
                           )}
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <div className="flex gap-2 text-sm">
                           <span>{report._count.evidence} files</span>
                           <span className="text-muted-foreground">|</span>

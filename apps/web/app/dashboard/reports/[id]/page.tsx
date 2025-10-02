@@ -43,8 +43,11 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { format } from "date-fns";
-import { ReportStatus, Priority } from "@workspace/database";
+import { ReportStatus, Priority, UserRole } from "@workspace/database";
 import { toast } from "sonner";
+import { StatusTimeline } from "@/components/reports/status-timeline";
+import { AssignOfficerDialog } from "@/components/reports/assign-officer-dialog";
+import { useAuthStore } from "@/lib/stores/auth.store";
 
 interface ReportDetails {
   id: string;
@@ -59,14 +62,14 @@ interface ReportDetails {
   incidentDate: string;
   createdAt: string;
   updatedAt: string;
-  reporter: {
+  author: {
     id: string;
     name: string;
     email: string;
     avatarUrl: string | null;
     department: string | null;
   };
-  assignedTo: {
+  assignee: {
     id: string;
     name: string;
     email: string;
@@ -96,6 +99,29 @@ interface ReportDetails {
       avatarUrl: string | null;
     };
   }>;
+  activities?: Array<{
+    id: string;
+    type: string;
+    action: string;
+    description?: string;
+    createdAt: string;
+    user?: {
+      name: string;
+      role: string;
+    };
+  }>;
+  notes: Array<{
+    id: string;
+    content: string;
+    type: string;
+    createdAt: string;
+    author: {
+      id: string;
+      name: string;
+      email: string;
+      avatarUrl: string | null;
+    };
+  }>;
   case: {
     id: string;
     title: string;
@@ -111,11 +137,15 @@ export default function ReportDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { user } = useAuthStore();
   const [report, setReport] = useState<ReportDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [updateContent, setUpdateContent] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("");
+
+  const isCitizen = user?.role === UserRole.CITIZEN;
+  const isOfficerOrAbove = user?.role && [UserRole.OFFICER, UserRole.ANALYST, UserRole.PROSECUTOR, UserRole.ADMIN].includes(user.role as any);
 
   useEffect(() => {
     fetchReport();
@@ -247,6 +277,17 @@ export default function ReportDetailPage({
     );
   }
 
+  const getBackPath = () => {
+    if (isCitizen) return "/dashboard/reports/my";
+    return "/dashboard/reports";
+  };
+
+  const canEditReport = () => {
+    if (!isCitizen) return true; // Officers/Analysts can always edit
+    // Citizens can only edit if report is SUBMITTED or under initial review
+    return report?.status === ReportStatus.SUBMITTED;
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -254,7 +295,7 @@ export default function ReportDetailPage({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => router.push("/dashboard/reports")}
+            onClick={() => router.push(getBackPath())}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -265,10 +306,12 @@ export default function ReportDetailPage({
             </p>
           </div>
         </div>
-        <Button onClick={() => router.push(`/dashboard/reports/${id}/edit`)}>
-          <Edit className="mr-2 h-4 w-4" />
-          Edit Report
-        </Button>
+        {canEditReport() && (
+          <Button onClick={() => router.push(`/dashboard/reports/${id}/edit`)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Report
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -419,18 +462,18 @@ export default function ReportDetailPage({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {report.updates.length === 0 ? (
+                {report.notes.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <MessageSquare className="h-12 w-12 mx-auto mb-2" />
                     <p>No updates yet</p>
                   </div>
                 ) : (
-                  report.updates.map((update) => (
-                    <div key={update.id} className="flex gap-4">
+                  report.notes.map((note) => (
+                    <div key={note.id} className="flex gap-4">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={update.user.avatarUrl || undefined} />
+                        <AvatarImage src={note.author.avatarUrl || undefined} />
                         <AvatarFallback>
-                          {update.user.name
+                          {note.author.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
@@ -439,13 +482,13 @@ export default function ReportDetailPage({
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium">
-                            {update.user.name}
+                            {note.author.name}
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            {format(new Date(update.createdAt), "PPp")}
+                            {format(new Date(note.createdAt), "PPp")}
                           </span>
                         </div>
-                        <p className="text-sm">{update.content}</p>
+                        <p className="text-sm">{note.content}</p>
                       </div>
                     </div>
                   ))
@@ -482,22 +525,22 @@ export default function ReportDetailPage({
                 <p className="text-sm font-medium mb-2">Reporter</p>
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src={report.reporter.avatarUrl || undefined} />
+                    <AvatarImage src={report.author.avatarUrl || undefined} />
                     <AvatarFallback>
-                      {report.reporter.name
+                      {report.author.name
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{report.reporter.name}</p>
+                    <p className="font-medium">{report.author.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {report.reporter.email}
+                      {report.author.email}
                     </p>
-                    {report.reporter.department && (
+                    {report.author.department && (
                       <p className="text-xs text-muted-foreground">
-                        {report.reporter.department}
+                        {report.author.department}
                       </p>
                     )}
                   </div>
@@ -508,30 +551,40 @@ export default function ReportDetailPage({
 
               <div>
                 <p className="text-sm font-medium mb-2">Assigned To</p>
-                {report.assignedTo ? (
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage
-                        src={report.assignedTo.avatarUrl || undefined}
-                      />
-                      <AvatarFallback>
-                        {report.assignedTo.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{report.assignedTo.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {report.assignedTo.email}
-                      </p>
-                      {report.assignedTo.department && (
-                        <p className="text-xs text-muted-foreground">
-                          {report.assignedTo.department}
+                {report.assignee ? (
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar>
+                        <AvatarImage
+                          src={report.assignee.avatarUrl || undefined}
+                        />
+                        <AvatarFallback>
+                          {report.assignee.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{report.assignee.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {report.assignee.email}
                         </p>
-                      )}
+                        {report.assignee.department && (
+                          <p className="text-xs text-muted-foreground">
+                            {report.assignee.department}
+                          </p>
+                        )}
+                      </div>
                     </div>
+                    {!isCitizen && (
+                      <AssignOfficerDialog
+                        reportId={report.id}
+                        reportTitle={report.title}
+                        currentAssigneeId={report.assignee.id}
+                        currentAssigneeName={report.assignee.name}
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-4">
@@ -539,93 +592,126 @@ export default function ReportDetailPage({
                     <p className="text-sm text-muted-foreground">
                       Not assigned
                     </p>
-                    <Button size="sm" className="mt-2">
-                      Assign Officer
-                    </Button>
+                    {!isCitizen && (
+                      <AssignOfficerDialog
+                        reportId={report.id}
+                        reportTitle={report.title}
+                      />
+                    )}
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Update Status</label>
-                <Select
-                  value={selectedStatus}
-                  onValueChange={setSelectedStatus}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={ReportStatus.SUBMITTED}>
-                      Submitted
-                    </SelectItem>
-                    <SelectItem value={ReportStatus.UNDER_REVIEW}>
-                      Under Review
-                    </SelectItem>
-                    <SelectItem value={ReportStatus.IN_PROGRESS}>
-                      In Progress
-                    </SelectItem>
-                    <SelectItem value={ReportStatus.RESOLVED}>
-                      Resolved
-                    </SelectItem>
-                    <SelectItem value={ReportStatus.DISMISSED}>
-                      Dismissed
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  size="sm"
-                  className="w-full"
-                  disabled={selectedStatus === report.status}
-                  onClick={handleStatusUpdate}
-                >
-                  Update Status
+          <StatusTimeline
+            currentStatus={report.status}
+            createdAt={report.createdAt}
+            updatedAt={report.updatedAt}
+            activities={report.activities}
+          />
+
+          {/* Quick Actions - Only for Officers/Analysts/Admins */}
+          {isOfficerOrAbove && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Update Status</label>
+                  <Select
+                    value={selectedStatus}
+                    onValueChange={setSelectedStatus}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={ReportStatus.SUBMITTED}>
+                        Submitted
+                      </SelectItem>
+                      <SelectItem value={ReportStatus.UNDER_REVIEW}>
+                        Under Review
+                      </SelectItem>
+                      <SelectItem value={ReportStatus.IN_PROGRESS}>
+                        In Progress
+                      </SelectItem>
+                      <SelectItem value={ReportStatus.RESOLVED}>
+                        Resolved
+                      </SelectItem>
+                      <SelectItem value={ReportStatus.DISMISSED}>
+                        Dismissed
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    disabled={selectedStatus === report.status}
+                    onClick={handleStatusUpdate}
+                  >
+                    Update Status
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Update Priority</label>
+                  <Select
+                    value={selectedPriority}
+                    onValueChange={setSelectedPriority}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={Priority.CRITICAL}>Critical</SelectItem>
+                      <SelectItem value={Priority.HIGH}>High</SelectItem>
+                      <SelectItem value={Priority.MEDIUM}>Medium</SelectItem>
+                      <SelectItem value={Priority.LOW}>Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    disabled={selectedPriority === report.priority}
+                    onClick={handlePriorityUpdate}
+                  >
+                    Update Priority
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <Button variant="outline" className="w-full">
+                  Create Case from Report
                 </Button>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Update Priority</label>
-                <Select
-                  value={selectedPriority}
-                  onValueChange={setSelectedPriority}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={Priority.CRITICAL}>Critical</SelectItem>
-                    <SelectItem value={Priority.HIGH}>High</SelectItem>
-                    <SelectItem value={Priority.MEDIUM}>Medium</SelectItem>
-                    <SelectItem value={Priority.LOW}>Low</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  size="sm"
-                  className="w-full"
-                  disabled={selectedPriority === report.priority}
-                  onClick={handlePriorityUpdate}
-                >
-                  Update Priority
+                <Button variant="outline" className="w-full">
+                  Generate Report PDF
                 </Button>
-              </div>
+              </CardContent>
+            </Card>
+          )}
 
-              <Separator />
-
-              <Button variant="outline" className="w-full">
-                Create Case from Report
-              </Button>
-              <Button variant="outline" className="w-full">
-                Generate Report PDF
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Citizen-specific actions */}
+          {isCitizen && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button variant="outline" className="w-full">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Report PDF
+                </Button>
+                {report.status === ReportStatus.SUBMITTED && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    Your report is awaiting review. You'll be notified of any updates.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

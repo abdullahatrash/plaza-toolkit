@@ -52,6 +52,118 @@ export const userApi = {
       where: { id },
       data
     });
+  },
+
+  async list(filters?: {
+    role?: string;
+    isActive?: boolean;
+    search?: string;
+  }, pagination?: { page: number; limit: number }) {
+    const where: Prisma.UserWhereInput = {};
+
+    if (filters) {
+      if (filters.role) where.role = filters.role;
+      if (filters.isActive !== undefined) where.isActive = filters.isActive;
+      if (filters.search) {
+        where.OR = [
+          { name: { contains: filters.search, mode: 'insensitive' } },
+          { email: { contains: filters.search, mode: 'insensitive' } },
+          { badge: { contains: filters.search, mode: 'insensitive' } }
+        ];
+      }
+    }
+
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          badge: true,
+          department: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true
+        },
+        orderBy: { name: 'asc' },
+        skip,
+        take: limit
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    return {
+      users,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    };
+  },
+
+  async create(data: Prisma.UserCreateInput) {
+    return prisma.user.create({
+      data,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        badge: true,
+        department: true,
+        isActive: true,
+        createdAt: true
+      }
+    });
+  },
+
+  async update(id: string, data: Partial<Prisma.UserUpdateInput>) {
+    return prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        badge: true,
+        department: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true
+      }
+    });
+  },
+
+  async deactivate(id: string) {
+    return prisma.user.update({
+      where: { id },
+      data: { isActive: false },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isActive: true
+      }
+    });
+  },
+
+  async activate(id: string) {
+    return prisma.user.update({
+      where: { id },
+      data: { isActive: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isActive: true
+      }
+    });
   }
 };
 
@@ -262,6 +374,8 @@ export const reportApi = {
         ];
       } else if (role === UserRole.ANALYST) {
         where.assigneeId = userId;
+      } else if (role === UserRole.CITIZEN) {
+        where.authorId = userId;
       }
     }
 
@@ -493,6 +607,90 @@ export const caseApi = {
     }
 
     return caseRecord;
+  },
+
+  async update(id: string, data: Partial<Prisma.CaseUpdateInput>, userId: string) {
+    const caseRecord = await prisma.case.update({
+      where: { id },
+      data,
+      include: {
+        owner: true,
+        team: true,
+        reports: true
+      }
+    });
+
+    await activityApi.create({
+      type: ActivityType.UPDATE,
+      action: 'Case updated',
+      description: `Case details updated`,
+      userId,
+      caseId: id
+    });
+
+    return caseRecord;
+  },
+
+  async delete(id: string, userId: string) {
+    await activityApi.create({
+      type: ActivityType.DELETE,
+      action: 'Case deleted',
+      description: `Case removed from system`,
+      userId,
+      caseId: id
+    });
+
+    return prisma.case.delete({
+      where: { id }
+    });
+  },
+
+  async addTeamMember(caseId: string, userId: string, addedBy: string) {
+    const caseRecord = await prisma.case.update({
+      where: { id: caseId },
+      data: {
+        team: {
+          connect: { id: userId }
+        }
+      },
+      include: {
+        team: true
+      }
+    });
+
+    await activityApi.create({
+      type: ActivityType.ASSIGN,
+      action: 'Team member added',
+      description: `User added to case team`,
+      userId: addedBy,
+      caseId
+    });
+
+    return caseRecord;
+  },
+
+  async removeTeamMember(caseId: string, userId: string, removedBy: string) {
+    const caseRecord = await prisma.case.update({
+      where: { id: caseId },
+      data: {
+        team: {
+          disconnect: { id: userId }
+        }
+      },
+      include: {
+        team: true
+      }
+    });
+
+    await activityApi.create({
+      type: ActivityType.UPDATE,
+      action: 'Team member removed',
+      description: `User removed from case team`,
+      userId: removedBy,
+      caseId
+    });
+
+    return caseRecord;
   }
 };
 
@@ -538,6 +736,66 @@ export const evidenceApi = {
         report: true
       },
       orderBy: { collectedAt: 'desc' }
+    });
+  },
+
+  async list(filters?: {
+    type?: string;
+    caseId?: string;
+    reportId?: string;
+    collectedBy?: string;
+  }, pagination?: { page: number; limit: number }) {
+    const where: Prisma.EvidenceWhereInput = {};
+
+    if (filters) {
+      if (filters.type) where.type = filters.type;
+      if (filters.caseId) where.caseId = filters.caseId;
+      if (filters.reportId) where.reportId = filters.reportId;
+      if (filters.collectedBy) where.collectedBy = filters.collectedBy;
+    }
+
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const [evidence, total] = await Promise.all([
+      prisma.evidence.findMany({
+        where,
+        include: {
+          collector: true,
+          report: { select: { id: true, reportNumber: true, title: true } },
+          case: { select: { id: true, caseNumber: true, title: true } }
+        },
+        orderBy: { collectedAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.evidence.count({ where })
+    ]);
+
+    return {
+      evidence,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    };
+  },
+
+  async update(id: string, data: Partial<Prisma.EvidenceUpdateInput>) {
+    return prisma.evidence.update({
+      where: { id },
+      data,
+      include: {
+        collector: true,
+        report: true,
+        case: true
+      }
+    });
+  },
+
+  async delete(id: string) {
+    return prisma.evidence.delete({
+      where: { id }
     });
   }
 };

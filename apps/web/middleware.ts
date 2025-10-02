@@ -4,6 +4,7 @@ import { verifyToken } from './lib/auth-middleware';
 
 // Define public routes that don't require authentication
 const publicRoutes = [
+  '/',
   '/login',
   '/simple-login',
   '/api/auth/login',
@@ -16,17 +17,17 @@ const publicRoutes = [
 // Define role-based route access
 const roleAccess: Record<string, string[]> = {
   ADMIN: ['*'], // Admin can access everything
-  OFFICER: ['/dashboard', '/simple-dashboard', '/reports', '/map', '/cases', '/evidence', '/profile', '/api/*'],
-  ANALYST: ['/dashboard', '/simple-dashboard', '/reports', '/map', '/analysis', '/cases', '/profile', '/api/*'],
-  PROSECUTOR: ['/dashboard', '/simple-dashboard', '/cases', '/reports', '/evidence', '/profile', '/api/*'],
-  CITIZEN: ['/dashboard', '/simple-dashboard', '/reports/my', '/profile', '/api/reports', '/api/auth/*']
+  OFFICER: ['/dashboard', '/simple-dashboard', '/dashboard/reports', '/dashboard/map', '/dashboard/cases', '/dashboard/evidence', '/profile', '/api/*'],
+  ANALYST: ['/dashboard', '/simple-dashboard', '/dashboard/reports', '/dashboard/map', '/dashboard/analysis', '/dashboard/cases', '/dashboard/users', '/profile', '/api/*'],
+  PROSECUTOR: ['/dashboard', '/simple-dashboard', '/dashboard/cases', '/dashboard/reports', '/dashboard/evidence', '/profile', '/api/*'],
+  CITIZEN: ['/dashboard', '/simple-dashboard', '/dashboard/reports', '/dashboard/reports/*', '/profile', '/api/reports', '/api/photos', '/api/notifications', '/api/auth/*', '/api/dashboard']
 };
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public routes
-  if (publicRoutes.some(route => pathname.startsWith(route))) {
+  if (pathname === '/' || publicRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
@@ -45,7 +46,7 @@ export async function middleware(request: NextRequest) {
   // Redirect to login if no token
   if (!token) {
     console.log('⚠️ No token found for path:', pathname);
-    const loginUrl = new URL('/simple-login', request.url);
+    const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -56,7 +57,7 @@ export async function middleware(request: NextRequest) {
   if (!payload) {
     // Invalid token, redirect to login
     console.log('❌ Token verification failed for path:', pathname);
-    const response = NextResponse.redirect(new URL('/simple-login', request.url));
+    const response = NextResponse.redirect(new URL('/login', request.url));
     response.cookies.delete('token');
     return response;
   }

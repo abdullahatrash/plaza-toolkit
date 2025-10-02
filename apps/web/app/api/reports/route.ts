@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/with-auth';
-import { reportApi } from '@workspace/lib/db-api';
-import { UserRole, ReportStatus, Priority } from '@workspace/database';
+import { reportApi, notificationApi } from '@workspace/lib/db-api';
+import { UserRole, ReportStatus, Priority, NotificationType } from '@workspace/database';
 import type { ApiResponse } from '@workspace/types/api';
 
 // GET /api/reports - Get reports with filters
@@ -156,6 +156,22 @@ export async function POST(request: NextRequest) {
       } : undefined,
       incidentDate: body.incidentDate ? new Date(body.incidentDate) : new Date()
     });
+
+    // Send confirmation notification to report author (citizen)
+    if (user.role === UserRole.CITIZEN) {
+      try {
+        await notificationApi.create({
+          type: NotificationType.SUCCESS,
+          title: 'Report Submitted Successfully',
+          message: `Your report "${body.title}" (${reportNumber}) has been submitted and is awaiting review.`,
+          link: `/dashboard/reports/${report.id}`,
+          userId: user.id
+        });
+      } catch (error) {
+        console.error('Failed to create confirmation notification:', error);
+        // Don't fail the request if notification fails
+      }
+    }
 
     return NextResponse.json<ApiResponse>(
       { success: true, data: report },

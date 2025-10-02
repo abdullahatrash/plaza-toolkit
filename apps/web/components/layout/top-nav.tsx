@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useUiStore } from "@/lib/stores/ui.store";
+import { NotificationsPanel } from "@/components/notifications/notifications-panel";
 import {
   Menu,
   Shield,
-  Bell,
   Search,
   User,
   LogOut,
@@ -72,7 +72,7 @@ export function TopNav() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-white shadow-sm">
       <div className="flex h-16 items-center px-4 gap-4">
         {/* Mobile Menu Toggle */}
         <Button
@@ -133,22 +133,7 @@ export function TopNav() {
           )}
 
           {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative"
-            onClick={() => router.push("/notifications")}
-          >
-            <Bell className="h-5 w-5" />
-            {notificationCount > 0 && (
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-              >
-                {notificationCount > 9 ? "9+" : notificationCount}
-              </Badge>
-            )}
-          </Button>
+          <NotificationsPanel />
 
           {/* User Menu */}
           <DropdownMenu>

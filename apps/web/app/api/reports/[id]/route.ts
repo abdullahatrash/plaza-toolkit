@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/with-auth';
-import { reportApi } from '@workspace/lib/db-api';
-import { UserRole } from '@workspace/database';
+import { reportApi, notificationApi } from '@workspace/lib/db-api';
+import { UserRole, NotificationType, ReportStatus } from '@workspace/database';
 import type { ApiResponse } from '@workspace/types/api';
 
 // GET /api/reports/[id] - Get a single report
@@ -167,6 +167,11 @@ export async function PATCH(
       updateData = updates;
     }
 
+    // Check if status or assignment is being updated (to send notification)
+    const statusChanged = updateData.status && updateData.status !== report.status;
+    const assigneeChanged = updateData.assigneeId && updateData.assigneeId !== report.assigneeId;
+    const oldStatus = report.status;
+
     // Update report
     const updatedReport = await reportApi.update({
       where: { id },
@@ -190,6 +195,63 @@ export async function PATCH(
         }
       }
     });
+
+    // Send notification to report author (citizen) if status changed
+    if (statusChanged && report.authorId !== user.id) {
+      const statusMessages: Record<string, { title: string; message: string; type: string }> = {
+        [ReportStatus.UNDER_REVIEW]: {
+          title: 'Report Under Review',
+          message: `Your report "${report.title}" is now being reviewed by our team.`,
+          type: NotificationType.INFO
+        },
+        [ReportStatus.IN_PROGRESS]: {
+          title: 'Investigation Started',
+          message: `Investigation has started on your report "${report.title}". An officer has been assigned.`,
+          type: NotificationType.INFO
+        },
+        [ReportStatus.RESOLVED]: {
+          title: 'Report Resolved',
+          message: `Your report "${report.title}" has been resolved. Thank you for your contribution!`,
+          type: NotificationType.SUCCESS
+        },
+        [ReportStatus.DISMISSED]: {
+          title: 'Report Status Updated',
+          message: `Your report "${report.title}" has been reviewed and dismissed.`,
+          type: NotificationType.WARNING
+        }
+      };
+
+      const statusUpdate = statusMessages[updateData.status];
+      if (statusUpdate) {
+        try {
+          await notificationApi.create({
+            type: statusUpdate.type,
+            title: statusUpdate.title,
+            message: statusUpdate.message,
+            link: `/dashboard/reports/${id}`,
+            userId: report.authorId
+          });
+        } catch (error) {
+          console.error('Failed to create notification:', error);
+          // Don't fail the request if notification fails
+        }
+      }
+    }
+
+    // Send notification to report author if officer is assigned
+    if (assigneeChanged && report.authorId !== user.id && updateData.assigneeId) {
+      try {
+        await notificationApi.create({
+          type: NotificationType.ASSIGNMENT,
+          title: 'Officer Assigned',
+          message: `An officer has been assigned to investigate your report "${report.title}".`,
+          link: `/dashboard/reports/${id}`,
+          userId: report.authorId
+        });
+      } catch (error) {
+        console.error('Failed to create assignment notification:', error);
+      }
+    }
 
     return NextResponse.json<ApiResponse>(
       { success: true, data: updatedReport },

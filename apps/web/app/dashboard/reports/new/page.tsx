@@ -21,12 +21,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@workspace/ui/components/card";
-import { ReportType, Priority } from "@workspace/database";
+import { ReportType, Priority, UserRole } from "@workspace/database";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useAuthStore } from "@/lib/stores/auth.store";
 
 const reportSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -43,8 +44,17 @@ type ReportFormData = z.infer<typeof reportSchema>;
 
 export default function NewReportPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
+
+  // Determine where to go back based on user role
+  const getBackPath = () => {
+    if (user?.role === UserRole.CITIZEN) {
+      return "/dashboard/reports/my";
+    }
+    return "/dashboard/reports";
+  };
 
   const {
     register,
@@ -73,9 +83,27 @@ export default function NewReportPage() {
       if (result.success) {
         toast.success("Report created successfully");
 
-        // TODO: Upload attachments if any
+        // Upload attachments if any
         if (attachments.length > 0) {
-          // Upload logic here
+          try {
+            const formData = new FormData();
+            attachments.forEach((file) => {
+              formData.append('files', file);
+            });
+            formData.append('reportId', result.data.id);
+
+            const uploadResponse = await fetch("/api/photos/upload", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!uploadResponse.ok) {
+              toast.error("Report created but failed to upload some photos");
+            }
+          } catch (uploadError) {
+            console.error("Photo upload error:", uploadError);
+            toast.error("Report created but failed to upload photos");
+          }
         }
 
         router.push(`/dashboard/reports/${result.data.id}`);
@@ -122,7 +150,7 @@ export default function NewReportPage() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.push("/dashboard/reports")}
+          onClick={() => router.push(getBackPath())}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -357,7 +385,7 @@ export default function NewReportPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/dashboard/reports")}
+            onClick={() => router.push(getBackPath())}
           >
             Cancel
           </Button>

@@ -5,7 +5,7 @@ import { verifyAuth } from '@/lib/auth-utils';
 // GET /api/cases/[id] - Get case by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
@@ -13,7 +13,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const caseRecord = await caseApi.findById(params.id);
+    const { id } = await params;
+    const caseRecord = await caseApi.findById(id);
 
     if (!caseRecord) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
@@ -32,7 +33,7 @@ export async function GET(
 // PATCH /api/cases/[id] - Update case
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
@@ -40,18 +41,19 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
 
     // Handle status update
     if (body.status) {
-      const updatedCase = await caseApi.updateStatus(params.id, body.status, user.id);
+      const updatedCase = await caseApi.updateStatus(id, body.status, user.id);
       return NextResponse.json(updatedCase);
     }
 
     // Handle other updates
     const { title, description, priority, type, summary, findings, legalStatus, courtDate, verdict } = body;
 
-    const updatedCase = await caseApi.update(params.id, {
+    const updatedCase = await caseApi.update(id, {
       ...(title && { title }),
       ...(description && { description }),
       ...(priority && { priority }),
@@ -76,7 +78,7 @@ export async function PATCH(
 // DELETE /api/cases/[id] - Delete case
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
@@ -89,7 +91,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await caseApi.delete(params.id, user.id);
+    const { id } = await params;
+    await caseApi.delete(id, user.id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -303,7 +303,7 @@ export async function DELETE(
 
     // Delete report and related data
     await reportApi.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json<ApiResponse>(

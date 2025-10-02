@@ -3,263 +3,126 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useUiStore } from '@/lib/stores/ui.store';
+import { getRoleConfig, type NavItem } from '@/lib/rbac-config';
 import { cn } from '@workspace/lib/utils';
 import {
-  Home,
-  FileText,
-  Map,
-  Briefcase,
-  BarChart3,
-  Brain,
-  Users,
-  Settings,
-  HelpCircle,
   ChevronRight,
-  Shield,
-  Camera,
-  AlertTriangle,
-  Gavel,
-  Activity,
-  X
+  ChevronDown,
+  Shield
 } from 'lucide-react';
 import { Button } from '@workspace/ui/components/button';
 import { ScrollArea } from '@workspace/ui/components/scroll-area';
 import { Badge } from '@workspace/ui/components/badge';
-
-interface NavItem {
-  id: string;
-  label: string;
-  href: string;
-  icon: React.ElementType;
-  badge?: number | string;
-  roles?: string[];
-  children?: NavItem[];
-}
-
-const navItems: NavItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    href: '/dashboard',
-    icon: Home,
-    roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN', 'CITIZEN']
-  },
-  // Citizen-specific navigation (simplified)
-  {
-    id: 'my-reports',
-    label: 'My Reports',
-    href: '/dashboard/reports/my',
-    icon: FileText,
-    roles: ['CITIZEN']
-  },
-  {
-    id: 'submit-report',
-    label: 'Submit Report',
-    href: '/dashboard/reports/new',
-    icon: AlertTriangle,
-    roles: ['CITIZEN']
-  },
-  // Officer/Admin navigation (full access)
-  {
-    id: 'reports',
-    label: 'Reports',
-    href: '/dashboard/reports',
-    icon: FileText,
-    roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN'],
-    children: [
-      {
-        id: 'all-reports',
-        label: 'All Reports',
-        href: '/dashboard/reports',
-        icon: FileText,
-        roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN']
-      },
-      {
-        id: 'my-reports-officer',
-        label: 'My Reports',
-        href: '/dashboard/reports/my',
-        icon: FileText,
-        roles: ['OFFICER']
-      },
-      {
-        id: 'new-report-officer',
-        label: 'New Report',
-        href: '/dashboard/reports/new',
-        icon: AlertTriangle,
-        roles: ['OFFICER']
-      }
-    ]
-  },
-  {
-    id: 'map',
-    label: 'Map Explorer',
-    href: '/dashboard/map',
-    icon: Map,
-    roles: ['OFFICER', 'ANALYST', 'ADMIN']
-  },
-  {
-    id: 'cases',
-    label: 'Cases',
-    href: '/dashboard/cases',
-    icon: Briefcase,
-    roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN'],
-    children: [
-      {
-        id: 'active-cases',
-        label: 'Active Cases',
-        href: '/dashboard/cases?status=active',
-        icon: Briefcase,
-        roles: ['PROSECUTOR', 'ADMIN']
-      },
-      {
-        id: 'my-cases',
-        label: 'My Cases',
-        href: '/dashboard/cases/my',
-        icon: Briefcase,
-        roles: ['PROSECUTOR']
-      },
-      {
-        id: 'court-calendar',
-        label: 'Court Calendar',
-        href: '/dashboard/cases/calendar',
-        icon: Gavel,
-        roles: ['PROSECUTOR']
-      }
-    ]
-  },
-  {
-    id: 'evidence',
-    label: 'Evidence',
-    href: '/dashboard/evidence',
-    icon: Camera,
-    roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN']
-  },
-  {
-    id: 'analysis',
-    label: 'AI Analysis',
-    href: '/dashboard/analysis',
-    icon: Brain,
-    roles: ['ANALYST', 'ADMIN'],
-    children: [
-      {
-        id: 'new-analysis',
-        label: 'New Analysis',
-        href: '/dashboard/analysis/new',
-        icon: Brain,
-        roles: ['ANALYST', 'ADMIN']
-      },
-      {
-        id: 'analysis-history',
-        label: 'History',
-        href: '/dashboard/analysis/history',
-        icon: Activity,
-        roles: ['ANALYST', 'ADMIN']
-      },
-      {
-        id: 'xai',
-        label: 'Explainable AI',
-        href: '/dashboard/analysis/xai',
-        icon: Brain,
-        roles: ['ANALYST', 'ADMIN']
-      }
-    ]
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    href: '/dashboard/analytics',
-    icon: BarChart3,
-    roles: ['ANALYST', 'ADMIN']
-  },
-  {
-    id: 'users',
-    label: 'User Management',
-    href: '/dashboard/users',
-    icon: Users,
-    roles: ['ADMIN']
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    href: '/settings',
-    icon: Settings,
-    roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN', 'CITIZEN']
-  },
-  {
-    id: 'help',
-    label: 'Help & Support',
-    href: '/help',
-    icon: HelpCircle,
-    roles: ['OFFICER', 'ANALYST', 'PROSECUTOR', 'ADMIN', 'CITIZEN']
-  }
-];
+import { useState } from 'react';
+import { UserRole } from '@workspace/database';
 
 export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuthStore();
   const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useUiStore();
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
-  // Filter nav items based on user role
-  const filteredNavItems = navItems.filter(item =>
-    !item.roles || item.roles.includes(user?.role || '')
-  );
+  // Get role-specific navigation
+  const roleConfig = user?.role ? getRoleConfig(user.role as UserRole) : null;
+  const navigation = roleConfig?.navigation || [];
 
-  const isActive = (item: NavItem, level: number) => {
-    // For dashboard home, must match exactly
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems(prev =>
+      prev.includes(itemId)
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
+
+  const isActive = (item: NavItem): boolean => {
+    // Exact match for dashboard
     if (item.href === '/dashboard') {
       return pathname === '/dashboard';
     }
 
-    // For child items (level > 0), match exactly
-    if (level > 0) {
-      return pathname === item.href || pathname.startsWith(item.href + '/');
-    }
-
-    // For parent items with children, active if any child matches
+    // For items with children, check if any child is active
     if (item.children && item.children.length > 0) {
       return item.children.some(child =>
         pathname === child.href || pathname.startsWith(child.href + '/')
       );
     }
 
-    // For parent items without children, use starts with
+    // Standard path matching
     return pathname === item.href || pathname.startsWith(item.href + '/');
   };
 
   const NavLink = ({ item, level = 0 }: { item: NavItem; level?: number }) => {
     const Icon = item.icon;
-    const active = isActive(item, level);
+    const active = isActive(item);
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded = expandedItems.includes(item.id);
+
+    const handleClick = () => {
+      if (hasChildren && !sidebarCollapsed) {
+        toggleExpanded(item.id);
+      } else {
+        router.push(item.href);
+        if (window.innerWidth < 1024) {
+          setSidebarOpen(false);
+        }
+      }
+    };
 
     return (
-      <Button
-        variant={active ? 'secondary' : 'ghost'}
-        className={cn(
-          'w-full justify-start gap-2',
-          level > 0 && 'pl-8',
-          active && 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+      <>
+        <Button
+          variant={active ? 'secondary' : 'ghost'}
+          className={cn(
+            'w-full justify-start gap-2 transition-colors',
+            level > 0 && 'pl-10 text-sm',
+            level === 0 && 'font-medium',
+            active && 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700',
+            sidebarCollapsed && level === 0 && 'justify-center px-2'
+          )}
+          onClick={handleClick}
+          title={sidebarCollapsed ? item.label : undefined}
+        >
+          <Icon className={cn(
+            'h-4 w-4 flex-shrink-0',
+            sidebarCollapsed && level === 0 && 'h-5 w-5'
+          )} />
+
+          {!sidebarCollapsed && (
+            <>
+              <span className="flex-1 text-left truncate">{item.label}</span>
+
+              {item.badge && (
+                <Badge variant="secondary" className="ml-auto">
+                  {item.badge}
+                </Badge>
+              )}
+
+              {hasChildren && (
+                <ChevronDown className={cn(
+                  'h-4 w-4 flex-shrink-0 transition-transform',
+                  isExpanded && 'rotate-180'
+                )} />
+              )}
+            </>
+          )}
+        </Button>
+
+        {/* Render children if expanded and not collapsed */}
+        {hasChildren && isExpanded && !sidebarCollapsed && (
+          <div className="mt-1 space-y-1">
+            {item.children!.map((child) => (
+              <NavLink key={child.id} item={child} level={1} />
+            ))}
+          </div>
         )}
-        onClick={() => {
-          router.push(item.href);
-          if (window.innerWidth < 1024) {
-            setSidebarOpen(false);
-          }
-        }}
-      >
-        <Icon className={cn('h-4 w-4', sidebarCollapsed && level === 0 && 'h-5 w-5')} />
-        {!sidebarCollapsed && (
-          <>
-            <span className="flex-1 text-left">{item.label}</span>
-            {item.badge && (
-              <Badge variant="secondary" className="ml-auto">
-                {item.badge}
-              </Badge>
-            )}
-          </>
-        )}
-      </Button>
+      </>
     );
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <>
@@ -282,42 +145,38 @@ export function SideNav() {
       >
         <div className="flex h-full flex-col">
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between border-b p-4">
+          <div className={cn(
+            "flex items-center border-b p-4",
+            sidebarCollapsed ? "justify-center" : "justify-between"
+          )}>
             {!sidebarCollapsed && (
               <div className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-blue-600" />
-                <span className="font-semibold">Navigation</span>
+                <span className="font-semibold text-gray-900">
+                  {roleConfig?.displayName || 'Navigation'}
+                </span>
               </div>
             )}
             <Button
               variant="ghost"
               size="icon"
-              className={cn(sidebarCollapsed && 'mx-auto')}
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              <ChevronRight className={cn(
-                'h-4 w-4 transition-transform',
-                sidebarCollapsed ? '' : 'rotate-180'
-              )} />
+              <ChevronRight
+                className={cn(
+                  'h-4 w-4 transition-transform duration-200',
+                  !sidebarCollapsed && 'rotate-180'
+                )}
+              />
             </Button>
           </div>
 
           {/* Navigation Items */}
           <ScrollArea className="flex-1 px-2 py-4">
             <nav className="space-y-1">
-              {filteredNavItems.map((item) => (
-                <div key={item.id}>
-                  <NavLink item={item} />
-                  {!sidebarCollapsed && item.children && (
-                    <div className="mt-1 space-y-1">
-                      {item.children
-                        .filter(child => !child.roles || child.roles.includes(user?.role || ''))
-                        .map((child) => (
-                          <NavLink key={child.id} item={child} level={1} />
-                        ))}
-                    </div>
-                  )}
-                </div>
+              {navigation.map((item) => (
+                <NavLink key={item.id} item={item} />
               ))}
             </nav>
           </ScrollArea>
@@ -326,8 +185,8 @@ export function SideNav() {
           {!sidebarCollapsed && (
             <div className="border-t p-4">
               <div className="text-xs text-gray-500">
-                <p>PLAZA Toolkit v1.0</p>
-                <p className="mt-1">© 2024 Environmental Protection</p>
+                <p className="font-medium">PLAZA Toolkit v1.0</p>
+                <p className="mt-1">Environmental Protection</p>
               </div>
             </div>
           )}

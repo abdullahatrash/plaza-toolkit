@@ -5,7 +5,7 @@ import { verifyAuth } from '@/lib/auth-utils';
 // GET /api/evidence/[id] - Get evidence by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
@@ -13,7 +13,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const evidence = await evidenceApi.findById(params.id);
+    const { id } = await params;
+    const evidence = await evidenceApi.findById(id);
 
     if (!evidence) {
       return NextResponse.json({ error: 'Evidence not found' }, { status: 404 });
@@ -32,7 +33,7 @@ export async function GET(
 // PATCH /api/evidence/[id] - Update evidence
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
@@ -40,10 +41,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { title, description, type, location, latitude, longitude, metadata, tags } = body;
 
-    const updatedEvidence = await evidenceApi.update(params.id, {
+    const updatedEvidence = await evidenceApi.update(id, {
       ...(title && { title }),
       ...(description && { description }),
       ...(type && { type }),
@@ -67,7 +69,7 @@ export async function PATCH(
 // DELETE /api/evidence/[id] - Delete evidence
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
@@ -80,7 +82,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await evidenceApi.delete(params.id);
+    const { id } = await params;
+
+    await evidenceApi.delete(id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -5,7 +5,7 @@ import { verifyAuth } from '@/lib/auth-utils';
 // PATCH /api/notifications/[id] - Mark notification as read
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
@@ -13,7 +13,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const notification = await notificationApi.markAsRead(params.id);
+    const { id } = await params;
+    const notification = await notificationApi.markAsRead(id);
     return NextResponse.json(notification);
   } catch (error) {
     console.error('Error marking notification as read:', error);

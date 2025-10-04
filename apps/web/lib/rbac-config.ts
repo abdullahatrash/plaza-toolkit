@@ -201,15 +201,21 @@ const prosecutorNavigation: NavItem[] = [
   },
   {
     id: 'cases',
-    label: 'Cases (Escalated)',
+    label: 'Cases',
     href: '/dashboard/cases',
     icon: Briefcase,
     description: 'Cases for legal review',
     children: [
       {
-        id: 'active-cases',
-        label: 'Active Cases',
-        href: '/dashboard/cases?status=ACTIVE',
+        id: 'my-cases',
+        label: 'My Cases',
+        href: '/dashboard/cases/my',
+        icon: Briefcase
+      },
+      {
+        id: 'all-cases',
+        label: 'All Cases',
+        href: '/dashboard/cases',
         icon: Activity
       },
       {

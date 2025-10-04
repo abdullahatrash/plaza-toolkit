@@ -108,6 +108,7 @@ export const NotificationType = {
   ASSIGNMENT: 'ASSIGNMENT',
   STATUS_CHANGE: 'STATUS_CHANGE',
   MENTION: 'MENTION',
-  DEADLINE: 'DEADLINE'
+  DEADLINE: 'DEADLINE',
+  NEW_REPORT: 'NEW_REPORT'
 } as const;
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType];

@@ -65,10 +65,12 @@ export default function NewEvidencePage() {
         });
 
         if (!uploadResponse.ok) {
-          throw new Error('File upload failed');
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || 'File upload failed');
         }
 
-        const uploadData = await uploadResponse.json();
+        const uploadResult = await uploadResponse.json();
+        const uploadData = uploadResult.data || uploadResult; // Handle both formats
         fileUrl = uploadData.url;
         fileType = file.type;
         fileSize = file.size;

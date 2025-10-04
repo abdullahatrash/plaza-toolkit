@@ -58,10 +58,44 @@ export async function GET(request: NextRequest) {
 
       case UserRole.ADMIN:
         // Admin sees overall system stats
-        const overallStats = await reportApi.getStats();
+        const { prisma } = await import('@workspace/database/client');
+
+        const [
+          totalUsers,
+          totalReports,
+          activeCases,
+          pendingReports,
+          recentActivities
+        ] = await Promise.all([
+          prisma.user.count({ where: { isActive: true } }),
+          prisma.report.count(),
+          prisma.case.count({
+            where: {
+              status: {
+                in: ['OPEN', 'IN_PROGRESS', 'PENDING_REVIEW', 'WITH_PROSECUTOR', 'IN_COURT']
+              }
+            }
+          }),
+          prisma.report.count({ where: { status: 'SUBMITTED' } }),
+          prisma.activity.findMany({
+            take: 10,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              user: {
+                select: { name: true, role: true }
+              }
+            }
+          })
+        ]);
+
+        const adminReportStats = await reportApi.getStats();
 
         dashboardData = {
-          ...overallStats,
+          totalUsers,
+          reportStats: adminReportStats,
+          activeCases,
+          pendingActions: pendingReports,
+          recentActivities,
           role: UserRole.ADMIN
         };
         break;

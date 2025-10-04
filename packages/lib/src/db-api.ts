@@ -505,6 +505,7 @@ export const caseApi = {
     status?: string;
     priority?: string;
     ownerId?: string;
+    hasCourtDate?: boolean;
   }, pagination?: { page: number; limit: number }) {
     const where: Prisma.CaseWhereInput = {};
 
@@ -512,6 +513,7 @@ export const caseApi = {
       if (filters.status) where.status = filters.status;
       if (filters.priority) where.priority = filters.priority;
       if (filters.ownerId) where.ownerId = filters.ownerId;
+      if (filters.hasCourtDate) where.courtDate = { not: null };
     }
 
     const page = pagination?.page || 1;

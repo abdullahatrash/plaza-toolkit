@@ -155,14 +155,17 @@ export async function PATCH(
 
     const body = await request.json();
 
+    // Extract note separately (it's not a Report field)
+    const { note, ...bodyWithoutNote } = body;
+
     // Citizens can only update certain fields
-    let updateData: any = body;
+    let updateData: any = bodyWithoutNote;
     if (user.role === UserRole.CITIZEN) {
       const allowedFields = ['title', 'description', 'location'];
       const updates: any = {};
       for (const field of allowedFields) {
-        if (field in body) {
-          updates[field] = body[field];
+        if (field in bodyWithoutNote) {
+          updates[field] = bodyWithoutNote[field];
         }
       }
       updateData = updates;
@@ -198,11 +201,11 @@ export async function PATCH(
     });
 
     // Create a note if status changed and a note was provided
-    if (statusChanged && body.note) {
+    if (statusChanged && note) {
       try {
         await prisma.note.create({
           data: {
-            content: body.note,
+            content: note,
             type: 'UPDATE',
             isInternal: true,
             reportId: id,
@@ -272,14 +275,30 @@ export async function PATCH(
       }
     }
 
+    // Send notification to the assigned officer
+    if (assigneeChanged && updateData.assigneeId && updateData.assigneeId !== user.id) {
+      try {
+        await notificationApi.create({
+          type: NotificationType.ASSIGNMENT,
+          title: 'New Report Assigned to You',
+          message: `You have been assigned to investigate report "${report.title}" (${report.reportNumber}).`,
+          link: `/dashboard/reports/${id}`,
+          userId: updateData.assigneeId
+        });
+      } catch (error) {
+        console.error('Failed to create officer assignment notification:', error);
+      }
+    }
+
     return NextResponse.json<ApiResponse>(
       { success: true, data: updatedReport },
       { status: 200 }
     );
   } catch (error) {
     console.error('Update report error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update report';
     return NextResponse.json<ApiResponse>(
-      { success: false, error: 'Failed to update report' },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }

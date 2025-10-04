@@ -16,11 +16,16 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || undefined;
     const priority = searchParams.get('priority') || undefined;
     const ownerId = searchParams.get('ownerId') || undefined;
+    const assigned = searchParams.get('assigned'); // 'me' for current user
+    const hasCourtDate = searchParams.get('hasCourtDate') === 'true';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
+    // If assigned=me, filter by current user
+    const effectiveOwnerId = assigned === 'me' ? user.id : ownerId;
+
     const result = await caseApi.list(
-      { status, priority, ownerId },
+      { status, priority, ownerId: effectiveOwnerId, hasCourtDate },
       { page, limit }
     );
 

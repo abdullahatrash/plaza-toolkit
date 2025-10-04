@@ -47,6 +47,7 @@
     "@types/react-dom": "^19.1.7",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "shadcn": "^3.3.1",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2"
   },

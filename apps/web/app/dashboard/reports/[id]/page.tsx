@@ -79,6 +79,14 @@ interface ReportDetails {
     avatarUrl: string | null;
     department: string | null;
   } | null;
+  photos: Array<{
+    id: string;
+    fileUrl: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    createdAt: string;
+  }>;
   evidence: Array<{
     id: string;
     type: string;
@@ -411,6 +419,42 @@ export default function ReportDetailPage({
             </CardContent>
           </Card>
 
+          {/* Photos Section */}
+          {report.photos && report.photos.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Photos</CardTitle>
+                <CardDescription>
+                  {report.photos.length} photo(s) attached to this report
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {report.photos.map((photo) => (
+                    <div key={photo.id} className="group relative">
+                      <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                        <img
+                          src={photo.fileUrl}
+                          alt={photo.fileName}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-sm font-medium truncate">
+                          {photo.fileName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {(photo.fileSize / 1024).toFixed(2)} KB • {format(new Date(photo.createdAt), "PP")}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Evidence & Attachments Section */}
           <Card>
             <CardHeader>
               <CardTitle>Evidence & Attachments</CardTitle>

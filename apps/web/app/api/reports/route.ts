@@ -189,6 +189,28 @@ export async function POST(request: NextRequest) {
         console.error('Failed to create confirmation notification:', error);
         // Don't fail the request if notification fails
       }
+
+      // Notify all analysts about the new report
+      try {
+        const { prisma } = await import('@workspace/database/client');
+        const analysts = await prisma.user.findMany({
+          where: { role: UserRole.ANALYST },
+          select: { id: true }
+        });
+
+        for (const analyst of analysts) {
+          await notificationApi.create({
+            type: NotificationType.NEW_REPORT,
+            title: 'New Report Submitted',
+            message: `A new report "${body.title}" (${reportNumber}) has been submitted by ${user.name} and requires review.`,
+            link: `/dashboard/reports/${report.id}`,
+            userId: analyst.id
+          });
+        }
+      } catch (error) {
+        console.error('Failed to notify analysts:', error);
+        // Don't fail the request if notification fails
+      }
     }
 
     return NextResponse.json<ApiResponse>(

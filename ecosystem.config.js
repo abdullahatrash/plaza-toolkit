@@ -11,7 +11,7 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      DATABASE_URL: 'file:./packages/database/prisma/dev.db',
+      DATABASE_URL: 'file:/var/www/web-server/plaza-toolkit/packages/database/prisma/dev.db',
       JWT_SECRET: 'plaza-jwt-secret-key-change-this-in-production',
       JWT_EXPIRES_IN: '7d',
       NEXT_PUBLIC_APP_URL: 'http://164.90.196.41',

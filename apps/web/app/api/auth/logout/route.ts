@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     // Clear the session cookie
     response.cookies.set('token', '', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for HTTP access (change to true when using HTTPS)
       sameSite: 'lax',
       maxAge: 0, // Expire immediately
       path: '/',

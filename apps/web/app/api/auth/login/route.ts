@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     // Set HTTP-only cookie
     response.cookies.set('token', result.token!, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for HTTP access (change to true when using HTTPS)
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',

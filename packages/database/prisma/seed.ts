@@ -183,8 +183,8 @@ async function main() {
     data: {
       title: 'Chemical Spill at Industrial Site',
       description: 'Major chemical leak detected at the Northside Industrial Complex. Strong chemical odor reported by multiple residents. Immediate investigation required.',
-      type: ReportType.CHEMICAL_SPILL,
-      status: ReportStatus.INVESTIGATING,
+      type: ReportType.POLLUTION,
+      status: ReportStatus.IN_PROGRESS,
       priority: Priority.CRITICAL,
       location: 'Northside Industrial Complex',
       latitude: 40.7580,
@@ -277,7 +277,7 @@ async function main() {
       title: 'Algae Bloom in City Lake',
       description: 'Significant algae bloom observed in the eastern section of City Lake. Water appears green with visible foam. Swimming advisory should be issued.',
       type: ReportType.WATER_QUALITY,
-      status: ReportStatus.INVESTIGATING,
+      status: ReportStatus.IN_PROGRESS,
       priority: Priority.MEDIUM,
       location: 'City Lake East',
       latitude: 40.7614,
@@ -308,7 +308,7 @@ async function main() {
     data: {
       title: 'Construction Waste Illegally Dumped',
       description: 'Large amount of construction debris dumped in protected wetland area. Materials include concrete, rebar, and possibly asbestos-containing materials.',
-      type: ReportType.ILLEGAL_DUMPING,
+      type: ReportType.WASTE,
       status: ReportStatus.SUBMITTED,
       priority: Priority.HIGH,
       location: 'Wetlands Reserve North Entrance',

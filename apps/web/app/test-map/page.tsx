@@ -15,8 +15,7 @@ export default function TestMapPage() {
       email: 'test@plaza.gov',
       name: 'Test Officer',
       role: 'OFFICER',
-      department: 'Environmental Protection',
-      badgeNumber: 'ENV001'
+      department: 'Environmental Protection'
     });
 
     // Redirect to map page

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
-          error: validation.error.errors[0].message,
+          error: validation.error.errors[0]?.message || 'Validation failed',
         },
         { status: 400 }
       );

@@ -23,7 +23,7 @@ import { ReportType, ReportStatus, Priority } from '@workspace/database';
 
 // Mock data - will be replaced with API calls
 const generateMockReports = (): MapMarker[] => {
-  const reports = [
+  const reports: MapMarker[] = [
     {
       id: '1',
       position: [40.7580, -73.9855] as [number, number],
@@ -143,7 +143,7 @@ const generateMockReports = (): MapMarker[] => {
           id: `cluster-${clusterIdx}-${i}`,
           title: `Environmental Incident #${reports.length + 1}`,
           description: 'Automated monitoring alert',
-          type: Object.values(ReportType)[Math.floor(Math.random() * 6)],
+          type: Object.values(ReportType)[Math.floor(Math.random() * 6)] as ReportType,
           priority: Object.values(Priority)[Math.floor(Math.random() * 4)] as Priority,
           status: Object.values(ReportStatus)[Math.floor(Math.random() * 5)],
           location: `Location ${reports.length + 1}`,

@@ -66,9 +66,9 @@ export const userApi = {
       if (filters.isActive !== undefined) where.isActive = filters.isActive;
       if (filters.search) {
         where.OR = [
-          { name: { contains: filters.search, mode: 'insensitive' } },
-          { email: { contains: filters.search, mode: 'insensitive' } },
-          { badge: { contains: filters.search, mode: 'insensitive' } }
+          { name: { contains: filters.search } },
+          { email: { contains: filters.search } },
+          { badge: { contains: filters.search } }
         ];
       }
     }
@@ -1145,10 +1145,10 @@ export const searchApi = {
       results.reports = await prisma.report.findMany({
         where: {
           OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { description: { contains: query, mode: 'insensitive' } },
-            { reportNumber: { contains: query, mode: 'insensitive' } },
-            { location: { contains: query, mode: 'insensitive' } }
+            { title: { contains: query } },
+            { description: { contains: query } },
+            { reportNumber: { contains: query } },
+            { location: { contains: query } }
           ]
         },
         include: {
@@ -1163,9 +1163,9 @@ export const searchApi = {
       results.cases = await prisma.case.findMany({
         where: {
           OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { description: { contains: query, mode: 'insensitive' } },
-            { caseNumber: { contains: query, mode: 'insensitive' } }
+            { title: { contains: query } },
+            { description: { contains: query } },
+            { caseNumber: { contains: query } }
           ]
         },
         include: {
@@ -1179,9 +1179,9 @@ export const searchApi = {
       results.users = await prisma.user.findMany({
         where: {
           OR: [
-            { name: { contains: query, mode: 'insensitive' } },
-            { email: { contains: query, mode: 'insensitive' } },
-            { badge: { contains: query, mode: 'insensitive' } }
+            { name: { contains: query } },
+            { email: { contains: query } },
+            { badge: { contains: query } }
           ]
         },
         take: 5

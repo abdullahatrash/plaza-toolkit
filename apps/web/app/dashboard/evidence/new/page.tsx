@@ -16,7 +16,18 @@ export default function NewEvidencePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    type: EvidenceType;
+    title: string;
+    description: string;
+    location: string;
+    latitude: string;
+    longitude: string;
+    reportId: string;
+    caseId: string;
+    tags: string;
+    collectedAt: string;
+  }>({
     type: EvidenceType.PHOTO,
     title: '',
     description: '',
@@ -140,7 +151,7 @@ export default function NewEvidencePage() {
               <Label htmlFor="type">Evidence Type *</Label>
               <Select
                 value={formData.type}
-                onValueChange={(value) => setFormData({ ...formData, type: value as typeof EvidenceType[keyof typeof EvidenceType] })}
+                onValueChange={(value) => setFormData({ ...formData, type: value as EvidenceType })}
               >
                 <SelectTrigger id="type">
                   <SelectValue />

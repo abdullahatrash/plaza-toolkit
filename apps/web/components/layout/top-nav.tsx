@@ -33,7 +33,7 @@ import {
   AvatarImage,
 } from "@workspace/ui/components/avatar";
 
-export function TopNav() {
+export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { toggleSidebar, notificationCount } = useUiStore();
@@ -78,7 +78,7 @@ export function TopNav() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleSidebar}
+          onClick={onMenuClick || toggleSidebar}
           className="lg:hidden"
         >
           <Menu className="h-5 w-5" />

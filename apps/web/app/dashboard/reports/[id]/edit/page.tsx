@@ -101,7 +101,7 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
 
       if (result.success) {
         toast.success('Report updated successfully');
-        router.push(`/dashboard/reports/${params.id}`);
+        router.push(`/dashboard/reports/${id}`);
       } else {
         toast.error(result.error || 'Failed to update report');
       }
@@ -147,7 +147,7 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.push(`/dashboard/reports/${params.id}`)}
+          onClick={() => router.push(`/dashboard/reports/${id}`)}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>

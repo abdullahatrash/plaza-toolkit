@@ -20,7 +20,14 @@ import { toast } from 'sonner';
 export default function NewUserPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    role: UserRole;
+    badge: string;
+    department: string;
+  }>({
     name: '',
     email: '',
     password: '',
@@ -130,7 +137,7 @@ export default function NewUserPage() {
               <Label htmlFor="role">
                 Role <span className="text-red-500">*</span>
               </Label>
-              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value as UserRole })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

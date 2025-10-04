@@ -16,12 +16,24 @@ import { Badge } from '@workspace/ui/components/badge';
 import { useState } from 'react';
 import { UserRole } from '@workspace/database';
 
-export function SideNav() {
+export function SideNav({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuthStore();
-  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useUiStore();
+  const { sidebarOpen: storeSidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useUiStore();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  // Use prop if provided, otherwise use store
+  const sidebarOpen = isOpen !== undefined ? isOpen : storeSidebarOpen;
+
+  // Handle close
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      setSidebarOpen(false);
+    }
+  };
 
   // Get role-specific navigation
   const roleConfig = user?.role ? getRoleConfig(user.role as UserRole) : null;
@@ -64,7 +76,7 @@ export function SideNav() {
       } else {
         router.push(item.href);
         if (window.innerWidth < 1024) {
-          setSidebarOpen(false);
+          handleClose();
         }
       }
     };
@@ -130,7 +142,7 @@ export function SideNav() {
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={handleClose}
         />
       )}
 

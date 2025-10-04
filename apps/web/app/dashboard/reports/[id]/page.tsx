@@ -668,7 +668,7 @@ export default function ReportDetailPage({
             <NotesSection
               reportId={report.id}
               userRole={user?.role as UserRole}
-              canAddNotes={isOfficerOrAbove && (isAnalyst || isAssignedOfficer || user?.role === UserRole.ADMIN)}
+              canAddNotes={!!(isOfficerOrAbove && (isAnalyst || isAssignedOfficer || user?.role === UserRole.ADMIN))}
             />
           )}
 

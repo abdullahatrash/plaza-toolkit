@@ -176,11 +176,10 @@ function HeatMapLayer({ markers }: { markers: any[] }) {
       setTimeout(() => setIsMapReady(true), 100);
     };
 
-    if (map.isLoaded && map.isLoaded()) {
-      onMapLoad();
-    } else {
-      map.on('load', onMapLoad);
-    }
+    map.on('load', onMapLoad);
+
+    // Also set as ready immediately in case map is already loaded
+    setTimeout(() => setIsMapReady(true), 100);
 
     return () => {
       map.off('load', onMapLoad);

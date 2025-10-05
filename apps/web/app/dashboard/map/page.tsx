@@ -637,7 +637,7 @@ export default function MapExplorePage() {
                 <SelectItem value={ReportStatus.UNDER_REVIEW}>Under Review</SelectItem>
                 <SelectItem value={ReportStatus.IN_PROGRESS}>In Progress</SelectItem>
                 <SelectItem value={ReportStatus.RESOLVED}>Resolved</SelectItem>
-                <SelectItem value={ReportStatus.CLOSED}>Closed</SelectItem>
+                <SelectItem value={ReportStatus.DISMISSED}>Dismissed</SelectItem>
               </SelectContent>
             </Select>
           </div>

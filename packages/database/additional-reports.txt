@@ -1,0 +1,279 @@
+// Additional reports for Barcelona (3 more)
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Sewage Overflow - Barcelona Beach',
+      description: 'Sewage overflow affecting Barceloneta beach water quality.',
+      type: ReportType.WATER_QUALITY,
+      status: ReportStatus.SUBMITTED,
+      priority: Priority.CRITICAL,
+      location: 'Barceloneta Beach',
+      latitude: 41.3795,
+      longitude: 2.1900,
+      address: 'Barceloneta, Barcelona, Spain',
+      incidentDate: new Date('2024-01-16T08:00:00'),
+      reportNumber: 'ES-BC-2024-003',
+      authorId: users.citizen3.id,
+      tags: JSON.stringify(['spain', 'sewage', 'beach-closure'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Illegal Beach Construction - Barcelona',
+      description: 'Unauthorized structures being built on protected beach area.',
+      type: ReportType.OTHER,
+      status: ReportStatus.UNDER_REVIEW,
+      priority: Priority.MEDIUM,
+      location: 'Barcelona Beach Promenade',
+      latitude: 41.3815,
+      longitude: 2.1920,
+      address: 'Beach Front, Barcelona, Spain',
+      incidentDate: new Date('2024-01-18T12:00:00'),
+      reportNumber: 'ES-BC-2024-004',
+      authorId: users.officer1.id,
+      tags: JSON.stringify(['spain', 'illegal-construction', 'coastal-protection'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Oil Spill - Barcelona Harbor',
+      description: 'Small oil spill detected near Barcelona harbor affecting beach area.',
+      type: ReportType.POLLUTION,
+      status: ReportStatus.IN_PROGRESS,
+      priority: Priority.HIGH,
+      location: 'Barcelona Harbor',
+      latitude: 41.3800,
+      longitude: 2.1895,
+      address: 'Port Area, Barcelona, Spain',
+      incidentDate: new Date('2024-01-19T07:30:00'),
+      reportNumber: 'ES-BC-2024-005',
+      authorId: users.officer2.id,
+      assigneeId: users.analyst1.id,
+      tags: JSON.stringify(['spain', 'oil-spill', 'marine-pollution'])
+    }
+  }));
+
+// Additional reports for East Devon (3 more)
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Pesticide Contamination - East Devon',
+      description: 'Pesticide residues detected above safe levels in river samples.',
+      type: ReportType.WATER_QUALITY,
+      status: ReportStatus.SUBMITTED,
+      priority: Priority.MEDIUM,
+      location: 'East Devon Stream',
+      latitude: 50.7195,
+      longitude: -3.5350,
+      address: 'Agricultural Zone, East Devon, UK',
+      incidentDate: new Date('2024-01-17T10:00:00'),
+      reportNumber: 'UK-ED-2024-003',
+      authorId: users.citizen1.id,
+      tags: JSON.stringify(['uk', 'pesticides', 'water-safety'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Livestock Waste Pollution - East Devon',
+      description: 'Farm slurry entering watercourse causing contamination.',
+      type: ReportType.POLLUTION,
+      status: ReportStatus.IN_PROGRESS,
+      priority: Priority.HIGH,
+      location: 'East Devon Farmland',
+      latitude: 50.7175,
+      longitude: -3.5325,
+      address: 'Dairy Farm Area, East Devon, UK',
+      incidentDate: new Date('2024-01-18T14:00:00'),
+      reportNumber: 'UK-ED-2024-004',
+      authorId: users.officer3.id,
+      assigneeId: users.analyst2.id,
+      tags: JSON.stringify(['uk', 'livestock', 'organic-pollution'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Algal Bloom - East Devon River',
+      description: 'Toxic algal bloom due to excess nutrients from agricultural runoff.',
+      type: ReportType.WATER_QUALITY,
+      status: ReportStatus.UNDER_REVIEW,
+      priority: Priority.CRITICAL,
+      location: 'East Devon River Otter',
+      latitude: 50.7190,
+      longitude: -3.5345,
+      address: 'River Otter, East Devon, UK',
+      incidentDate: new Date('2024-01-20T09:00:00'),
+      reportNumber: 'UK-ED-2024-005',
+      authorId: users.officer1.id,
+      tags: JSON.stringify(['uk', 'algal-bloom', 'ecosystem-damage'])
+    }
+  }));
+
+// Additional reports for Puglia (3 more)
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Toxic Smoke - Puglia Waste Fire',
+      description: 'Toxic smoke from burning waste affecting nearby communities.',
+      type: ReportType.AIR_QUALITY,
+      status: ReportStatus.SUBMITTED,
+      priority: Priority.CRITICAL,
+      location: 'Puglia Industrial Area',
+      latitude: 40.7285,
+      longitude: 17.2445,
+      address: 'Industrial Zone, Puglia, Italy',
+      incidentDate: new Date('2024-01-16T16:00:00'),
+      reportNumber: 'IT-PU-2024-003',
+      authorId: users.citizen2.id,
+      tags: JSON.stringify(['italy', 'toxic-smoke', 'waste-fire'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Groundwater Contamination - Puglia',
+      description: 'Waste leachate contaminating groundwater sources.',
+      type: ReportType.WATER_QUALITY,
+      status: ReportStatus.IN_PROGRESS,
+      priority: Priority.HIGH,
+      location: 'Puglia Aquifer Zone',
+      latitude: 40.7295,
+      longitude: 17.2455,
+      address: 'Water Source Area, Puglia, Italy',
+      incidentDate: new Date('2024-01-17T11:30:00'),
+      reportNumber: 'IT-PU-2024-004',
+      authorId: users.officer2.id,
+      assigneeId: users.analyst1.id,
+      tags: JSON.stringify(['italy', 'groundwater', 'leachate'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Repeat Offender - Puglia Dump Site',
+      description: 'Same location used repeatedly for illegal waste dumping.',
+      type: ReportType.WASTE,
+      status: ReportStatus.UNDER_REVIEW,
+      priority: Priority.HIGH,
+      location: 'Puglia Rural Area',
+      latitude: 40.7275,
+      longitude: 17.2435,
+      address: 'Rural Waste Site, Puglia, Italy',
+      incidentDate: new Date('2024-01-19T13:00:00'),
+      reportNumber: 'IT-PU-2024-005',
+      authorId: users.officer3.id,
+      tags: JSON.stringify(['italy', 'repeat-offense', 'enforcement'])
+    }
+  }));
+
+// Additional reports for Amsterdam (3 more)
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Invasive Species - Amsterdam Canal',
+      description: 'Invasive aquatic plant species threatening native biodiversity.',
+      type: ReportType.WILDLIFE,
+      status: ReportStatus.SUBMITTED,
+      priority: Priority.MEDIUM,
+      location: 'Amsterdam Waterways',
+      latitude: 52.3685,
+      longitude: 4.9010,
+      address: 'Canal System, Amsterdam, Netherlands',
+      incidentDate: new Date('2024-01-15T10:30:00'),
+      reportNumber: 'NL-AM-2024-003',
+      authorId: users.citizen3.id,
+      tags: JSON.stringify(['netherlands', 'invasive-species', 'aquatic'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Urban Heat Island - Amsterdam Park',
+      description: 'Loss of green space contributing to urban heat island effect.',
+      type: ReportType.OTHER,
+      status: ReportStatus.UNDER_REVIEW,
+      priority: Priority.LOW,
+      location: 'Amsterdam City Park',
+      latitude: 52.3695,
+      longitude: 4.9020,
+      address: 'Park Area, Amsterdam, Netherlands',
+      incidentDate: new Date('2024-01-18T14:00:00'),
+      reportNumber: 'NL-AM-2024-004',
+      authorId: users.officer1.id,
+      tags: JSON.stringify(['netherlands', 'urban-planning', 'climate'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Bee Colony Decline - Amsterdam',
+      description: 'Significant decline in urban bee populations affecting pollination.',
+      type: ReportType.WILDLIFE,
+      status: ReportStatus.IN_PROGRESS,
+      priority: Priority.MEDIUM,
+      location: 'Amsterdam Urban Gardens',
+      latitude: 52.3675,
+      longitude: 4.9005,
+      address: 'Community Gardens, Amsterdam, Netherlands',
+      incidentDate: new Date('2024-01-20T11:00:00'),
+      reportNumber: 'NL-AM-2024-005',
+      authorId: users.officer2.id,
+      assigneeId: users.analyst2.id,
+      tags: JSON.stringify(['netherlands', 'pollinators', 'ecosystem-services'])
+    }
+  }));
+
+// Additional reports for Flanders (3 more)
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Heavy Metal Detection - Flanders',
+      description: 'Lead and cadmium detected above safe limits in remediation site.',
+      type: ReportType.POLLUTION,
+      status: ReportStatus.SUBMITTED,
+      priority: Priority.HIGH,
+      location: 'Flanders Industrial Legacy',
+      latitude: 51.0545,
+      longitude: 3.7210,
+      address: 'Former Industrial Site, Flanders, Belgium',
+      incidentDate: new Date('2024-01-16T09:00:00'),
+      reportNumber: 'BE-FL-2024-003',
+      authorId: users.officer3.id,
+      tags: JSON.stringify(['belgium', 'heavy-metals', 'soil-testing'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Remediation Delay - Flanders',
+      description: 'Scheduled soil remediation project experiencing significant delays.',
+      type: ReportType.POLLUTION,
+      status: ReportStatus.UNDER_REVIEW,
+      priority: Priority.MEDIUM,
+      location: 'Flanders Cleanup Site',
+      latitude: 51.0555,
+      longitude: 3.7220,
+      address: 'Remediation Zone, Flanders, Belgium',
+      incidentDate: new Date('2024-01-17T13:30:00'),
+      reportNumber: 'BE-FL-2024-004',
+      authorId: users.citizen1.id,
+      tags: JSON.stringify(['belgium', 'project-delay', 'accountability'])
+    }
+  }));
+
+  reports.push(await prisma.report.create({
+    data: {
+      title: 'Asbestos Discovery - Flanders',
+      description: 'Asbestos contamination found during soil excavation work.',
+      type: ReportType.POLLUTION,
+      status: ReportStatus.IN_PROGRESS,
+      priority: Priority.CRITICAL,
+      location: 'Flanders Construction Site',
+      latitude: 51.0535,
+      longitude: 3.7205,
+      address: 'Development Area, Flanders, Belgium',
+      incidentDate: new Date('2024-01-19T10:00:00'),
+      reportNumber: 'BE-FL-2024-005',
+      authorId: users.officer1.id,
+      assigneeId: users.analyst1.id,
+      tags: JSON.stringify(['belgium', 'asbestos', 'hazardous-materials'])
+    }
+  }));

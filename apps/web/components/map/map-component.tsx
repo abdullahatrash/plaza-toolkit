@@ -10,14 +10,12 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card';
 import { Badge } from '@workspace/ui/components/badge';
 import { Button } from '@workspace/ui/components/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@workspace/ui/components/select';
 import {
   MapPin,
   AlertTriangle,
   FileText,
   Camera,
   Navigation,
-  Filter,
   Layers,
   ZoomIn,
   ZoomOut,
@@ -54,12 +52,25 @@ interface MapComponentProps {
 // Map control component for user location
 function LocationControl() {
   const map = useMap();
+  const controlRef = useRef<HTMLDivElement | null>(null);
 
   const handleLocate = () => {
     map.locate({ setView: true, maxZoom: 16 });
   };
 
   useEffect(() => {
+    if (!map || !controlRef.current) return;
+
+    // Create custom Leaflet control
+    const CustomControl = L.Control.extend({
+      onAdd: function() {
+        return controlRef.current!;
+      }
+    });
+
+    const control = new CustomControl({ position: 'topleft' });
+    control.addTo(map);
+
     map.on('locationfound', (e) => {
       const radius = e.accuracy / 2;
       L.marker(e.latlng).addTo(map)
@@ -74,11 +85,12 @@ function LocationControl() {
     return () => {
       map.off('locationfound');
       map.off('locationerror');
+      control.remove();
     };
   }, [map]);
 
   return (
-    <div className="leaflet-control leaflet-bar">
+    <div ref={controlRef} className="leaflet-bar" style={{ marginTop: '80px' }}>
       <a
         href="#"
         title="Locate me"
@@ -94,7 +106,9 @@ function LocationControl() {
           height: '34px',
           fontSize: '18px',
           backgroundColor: 'white',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          textDecoration: 'none',
+          color: '#333'
         }}
       >
         📍
@@ -358,29 +372,8 @@ export default function MapComponent({
   onAreaSelect,
   onClusterClick
 }: MapComponentProps) {
-  const [filteredMarkers, setFilteredMarkers] = useState(markers);
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-
-  useEffect(() => {
-    let filtered = [...markers];
-
-    if (filterType !== 'all') {
-      filtered = filtered.filter(m => m.data?.type === filterType);
-    }
-    if (filterPriority !== 'all') {
-      filtered = filtered.filter(m => m.data?.priority === filterPriority);
-    }
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(m => m.data?.status === filterStatus);
-    }
-
-    setFilteredMarkers(filtered);
-  }, [markers, filterType, filterPriority, filterStatus]);
-
   const renderMarkers = () => {
-    const markerElements = filteredMarkers.map((marker) => (
+    const markerElements = markers.map((marker) => (
       <Marker
         key={marker.id}
         position={marker.position}
@@ -446,6 +439,25 @@ export default function MapComponent({
     return showClusters ? (
       <MarkerClusterGroup
         chunkedLoading
+        iconCreateFunction={(cluster: any) => {
+          const count = cluster.getChildCount();
+          let size = 'small';
+          let sizeClass = 'marker-cluster-small';
+
+          if (count > 100) {
+            size = 'large';
+            sizeClass = 'marker-cluster-large';
+          } else if (count > 10) {
+            size = 'medium';
+            sizeClass = 'marker-cluster-medium';
+          }
+
+          return L.divIcon({
+            html: `<div><span style="font-size: 16px; font-weight: 700;">${count}</span></div>`,
+            className: `marker-cluster ${sizeClass}`,
+            iconSize: L.point(40, 40)
+          });
+        }}
         eventHandlers={{
           clusterclick: (cluster: any) => {
             if (onClusterClick) {
@@ -453,7 +465,7 @@ export default function MapComponent({
               const clusterMarkers = cluster.layer.getAllChildMarkers();
               const markerData = clusterMarkers.map((m: any) => {
                 // Find the original marker data
-                return filteredMarkers.find(fm =>
+                return markers.find(fm =>
                   fm.position[0] === m.getLatLng().lat &&
                   fm.position[1] === m.getLatLng().lng
                 );
@@ -472,60 +484,6 @@ export default function MapComponent({
 
   return (
     <div className="relative w-full h-full">
-      {/* Map Filters */}
-      {showFilters && (
-        <div className="absolute top-4 right-4 z-[1001] bg-card border rounded-lg shadow-lg p-3 space-y-2">
-          <div className="flex items-center gap-2 mb-2">
-            <Filter className="h-4 w-4" />
-            <span className="text-sm font-semibold">Filters</span>
-          </div>
-
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-40 h-8 text-xs">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent className="z-[9999]">
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value={ReportType.POLLUTION}>Pollution</SelectItem>
-              <SelectItem value={ReportType.WILDLIFE}>Wildlife</SelectItem>
-              <SelectItem value={ReportType.WATER_QUALITY}>Water Quality</SelectItem>
-              <SelectItem value={ReportType.WASTE}>Waste/Dumping</SelectItem>
-              <SelectItem value={ReportType.AIR_QUALITY}>Air Quality</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={filterPriority} onValueChange={setFilterPriority}>
-            <SelectTrigger className="w-40 h-8 text-xs">
-              <SelectValue placeholder="Priority" />
-            </SelectTrigger>
-            <SelectContent className="z-[9999]">
-              <SelectItem value="all">All Priorities</SelectItem>
-              <SelectItem value={Priority.CRITICAL}>Critical</SelectItem>
-              <SelectItem value={Priority.HIGH}>High</SelectItem>
-              <SelectItem value={Priority.MEDIUM}>Medium</SelectItem>
-              <SelectItem value={Priority.LOW}>Low</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-40 h-8 text-xs">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent className="z-[9999]">
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value={ReportStatus.SUBMITTED}>Submitted</SelectItem>
-              <SelectItem value={ReportStatus.UNDER_REVIEW}>Under Review</SelectItem>
-              <SelectItem value={ReportStatus.IN_PROGRESS}>In Progress</SelectItem>
-              <SelectItem value={ReportStatus.RESOLVED}>Resolved</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <div className="text-xs text-muted-foreground pt-2 border-t">
-            Showing {filteredMarkers.length} of {markers.length} reports
-          </div>
-        </div>
-      )}
-
       {/* Map Container */}
       <MapContainer
         center={center}
@@ -564,7 +522,7 @@ export default function MapComponent({
           {showHeatmap && (
             <LayersControl.Overlay checked name="Heat Map">
               <LayerGroup>
-                <HeatMapLayer markers={filteredMarkers} />
+                <HeatMapLayer markers={markers} />
               </LayerGroup>
             </LayersControl.Overlay>
           )}

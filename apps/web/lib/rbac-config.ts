@@ -85,11 +85,11 @@ const officerNavigation: NavItem[] = [
     ]
   },
   {
-    id: 'my-cases',
-    label: 'My Cases',
+    id: 'team-cases',
+    label: 'Team Cases',
     href: '/dashboard/cases',
     icon: Briefcase,
-    description: 'Active investigations'
+    description: 'Investigations you\'re supporting'
   },
   {
     id: 'evidence',
@@ -351,13 +351,6 @@ const citizenNavigation: NavItem[] = [
     description: 'Report an incident'
   },
   {
-    id: 'explore-map',
-    label: 'Explore Map',
-    href: '/dashboard/map',
-    icon: Map,
-    description: 'View incident map'
-  },
-  {
     id: 'settings',
     label: 'Settings',
     href: '/dashboard/settings',
@@ -450,7 +443,6 @@ export const RBAC_CONFIG: Record<UserRole, RoleConfig> = {
     permissions: [
       'reports.create',
       'reports.view.own',
-      'map.view',
       'notifications.view'
     ]
   }

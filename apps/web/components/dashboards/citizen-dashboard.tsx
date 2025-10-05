@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
-} from '@workspace/ui/components/card';
-import { Badge } from '@workspace/ui/components/badge';
-import { Button } from '@workspace/ui/components/button';
+  CardTitle,
+  CardFooter,
+  CardAction,
+} from "@workspace/ui/components/card";
+import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
 import {
   FileText,
   AlertTriangle,
@@ -18,10 +20,10 @@ import {
   Camera,
   Activity,
   Map,
-  TrendingUp
-} from 'lucide-react';
-import { formatRelativeTime } from '@workspace/lib/utils';
-import { Priority } from '@workspace/database';
+  TrendingUp,
+} from "lucide-react";
+import { formatRelativeTime } from "@workspace/lib/utils";
+import { Priority } from "@workspace/database";
 
 interface CitizenDashboardProps {
   data: any;
@@ -50,74 +52,102 @@ export function CitizenDashboard({ data, userName }: CitizenDashboardProps) {
 
   return (
     <>
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back, {userName}!</h1>
-        <p className="text-muted-foreground mt-2">
-          Track your environmental incident reports and their status
-        </p>
+      {/* Welcome Section with Action Buttons */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome back, {userName}!
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Track your environmental incident reports and their status
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => router.push("/dashboard/reports/new")}>
+            <FileText className="h-4 w-4 mr-2" />
+            New Report
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/dashboard/reports/my")}
+          >
+            <Activity className="h-4 w-4 mr-2" />
+            My Reports
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/dashboard/map")}
+          >
+            <Map className="h-4 w-4 mr-2" />
+            Map
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <FileText className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 mb-8 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Total Reports</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {reportStats?.total || 0}
+            </CardTitle>
+            <CardAction>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">
+              Reports submitted by you
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Reports submitted by you</p>
-          </CardContent>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Clock className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Under Review</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-yellow-600">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Under Review</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-yellow-600">
               {(byStatus.SUBMITTED || 0) + (byStatus.UNDER_REVIEW || 0)}
+            </CardTitle>
+            <CardAction>
+              <Clock className="h-4 w-4 text-yellow-600" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">
+              Being reviewed by officers
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Being reviewed by officers</p>
-          </CardContent>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Activity className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-orange-600">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>In Progress</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-orange-600">
               {byStatus.IN_PROGRESS || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Active investigations</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Activity className="h-4 w-4 text-orange-600" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Active investigations</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <TrendingUp className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Resolved</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-green-600">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Resolved</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-green-600">
               {byStatus.RESOLVED || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Successfully resolved</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Successfully resolved</div>
+          </CardFooter>
         </Card>
       </div>
 
@@ -134,7 +164,7 @@ export function CitizenDashboard({ data, userName }: CitizenDashboardProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push('/dashboard/reports/my')}
+              onClick={() => router.push("/dashboard/reports/my")}
             >
               View All Reports
             </Button>
@@ -144,14 +174,12 @@ export function CitizenDashboard({ data, userName }: CitizenDashboardProps) {
           {recent.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">
-                No reports yet
-              </h3>
+              <h3 className="text-lg font-medium mb-2">No reports yet</h3>
               <p className="text-muted-foreground mb-6">
                 You haven't submitted any environmental incident reports yet
               </p>
               <Button
-                onClick={() => router.push('/dashboard/reports/new')}
+                onClick={() => router.push("/dashboard/reports/new")}
                 size="lg"
               >
                 <FileText className="mr-2 h-5 w-5" />
@@ -172,13 +200,11 @@ export function CitizenDashboard({ data, userName }: CitizenDashboardProps) {
                         {getPriorityIcon(report.priority)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate">
-                          {report.title}
-                        </h4>
+                        <h4 className="font-medium truncate">{report.title}</h4>
                         <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {report.location || 'No location'}
+                            {report.location || "No location"}
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -195,65 +221,12 @@ export function CitizenDashboard({ data, userName }: CitizenDashboardProps) {
                     </div>
                   </div>
                   <Badge variant="secondary" className="text-xs ml-3">
-                    {report.status.replace(/_/g, ' ')}
+                    {report.status.replace(/_/g, " ")}
                   </Badge>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks you can perform</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/reports/new')}
-            >
-              <FileText className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">New Report</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Submit an incident
-                </div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/reports/my')}
-            >
-              <Activity className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Track Reports</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  View your submissions
-                </div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/map')}
-            >
-              <Map className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Explore Map</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  View incidents map
-                </div>
-              </div>
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </>

@@ -6,10 +6,11 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
+  CardFooter,
+  CardAction
 } from '@workspace/ui/components/card';
 import { Button } from '@workspace/ui/components/button';
-import { Badge } from '@workspace/ui/components/badge';
 import {
   Brain,
   FileText,
@@ -31,133 +32,94 @@ export function AnalystDashboard({ data, userName }: AnalystDashboardProps) {
 
   return (
     <>
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Data Analyst Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Welcome back, {userName}</p>
+      {/* Welcome Section with Quick Actions */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Data Analyst Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Welcome back, {userName}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => router.push('/dashboard/analysis/new')}>
+            <Brain className="h-4 w-4 mr-2" />
+            New Analysis
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/analytics')}>
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Analytics
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/analysis/xai')}>
+            <Shield className="h-4 w-4 mr-2" />
+            XAI Panel
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/map')}>
+            <Map className="h-4 w-4 mr-2" />
+            Map View
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Clock className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Active Analyses</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 mb-8 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Active Analyses</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.activeAnalyses || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">In progress</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">In progress</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Activity className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Completed</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.completedAnalyses || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">This month</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">This month</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <FileText className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Reports for Review</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-orange-600">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Reports for Review</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-orange-600">
               {data?.assignedReports || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Pending analysis</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <FileText className="h-4 w-4 text-orange-600" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Pending analysis</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Shield className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Cases Involved</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Cases Involved</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.casesInvolved || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Active cases</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Active cases</div>
+          </CardFooter>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common analysis tasks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/analysis/new')}
-            >
-              <Brain className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">New Analysis</div>
-                <div className="text-xs text-muted-foreground mt-1">Run AI analysis</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/analytics')}
-            >
-              <BarChart3 className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Analytics</div>
-                <div className="text-xs text-muted-foreground mt-1">View insights</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/analysis/xai')}
-            >
-              <Shield className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">XAI Panel</div>
-                <div className="text-xs text-muted-foreground mt-1">Explainability</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/map')}
-            >
-              <Map className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Map View</div>
-                <div className="text-xs text-muted-foreground mt-1">Geospatial data</div>
-              </div>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Analysis Queue */}
       <Card>

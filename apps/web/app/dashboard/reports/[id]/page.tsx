@@ -45,7 +45,7 @@ import {
 import { format } from "date-fns";
 import { ReportStatus, Priority, UserRole } from "@workspace/database";
 import { toast } from "sonner";
-import { StatusTimeline } from "@/components/reports/status-timeline";
+import { HorizontalStatusTimeline } from "@/components/reports/horizontal-status-timeline";
 import { AssignOfficerDialog } from "@/components/reports/assign-officer-dialog";
 import { UpdateStatusDialog } from "@/components/reports/update-status-dialog";
 import { CreateCaseDialog } from "@/components/cases/create-case-dialog";
@@ -160,7 +160,14 @@ export default function ReportDetailPage({
   const isCitizen = user?.role === UserRole.CITIZEN;
   const isOfficer = user?.role === UserRole.OFFICER;
   const isAnalyst = user?.role === UserRole.ANALYST;
-  const isOfficerOrAbove = user?.role && [UserRole.OFFICER, UserRole.ANALYST, UserRole.PROSECUTOR, UserRole.ADMIN].includes(user.role as any);
+  const isOfficerOrAbove =
+    user?.role &&
+    [
+      UserRole.OFFICER,
+      UserRole.ANALYST,
+      UserRole.PROSECUTOR,
+      UserRole.ADMIN,
+    ].includes(user.role as any);
   const isAssignedOfficer = report?.assignee?.id === user?.id;
 
   useEffect(() => {
@@ -285,7 +292,10 @@ export default function ReportDetailPage({
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p>Report not found</p>
-          <Button onClick={() => router.push("/dashboard/reports")} className="mt-4">
+          <Button
+            onClick={() => router.push("/dashboard/reports")}
+            className="mt-4"
+          >
             Back to Reports
           </Button>
         </div>
@@ -329,6 +339,17 @@ export default function ReportDetailPage({
           </Button>
         )}
       </div>
+
+      {/* Horizontal Timeline Section */}
+      <Card>
+        <CardContent className="pt-6">
+          <HorizontalStatusTimeline
+            currentStatus={report.status}
+            createdAt={report.createdAt}
+            updatedAt={report.updatedAt}
+          />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2 space-y-6">
@@ -444,7 +465,8 @@ export default function ReportDetailPage({
                           {photo.fileName}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {(photo.fileSize / 1024).toFixed(2)} KB • {format(new Date(photo.createdAt), "PP")}
+                          {(photo.fileSize / 1024).toFixed(2)} KB •{" "}
+                          {format(new Date(photo.createdAt), "PP")}
                         </p>
                       </div>
                     </div>
@@ -656,19 +678,19 @@ export default function ReportDetailPage({
             </CardContent>
           </Card>
 
-          <StatusTimeline
-            currentStatus={report.status}
-            createdAt={report.createdAt}
-            updatedAt={report.updatedAt}
-            activities={report.activities}
-          />
-
           {/* Investigation Notes */}
           {!isCitizen && (
             <NotesSection
               reportId={report.id}
               userRole={user?.role as UserRole}
-              canAddNotes={!!(isOfficerOrAbove && (isAnalyst || isAssignedOfficer || user?.role === UserRole.ADMIN))}
+              canAddNotes={
+                !!(
+                  isOfficerOrAbove &&
+                  (isAnalyst ||
+                    isAssignedOfficer ||
+                    user?.role === UserRole.ADMIN)
+                )
+              }
             />
           )}
 
@@ -679,7 +701,8 @@ export default function ReportDetailPage({
                 <CardTitle>Investigation Actions</CardTitle>
                 {isOfficer && !isAssignedOfficer && (
                   <CardDescription className="text-yellow-600">
-                    You can view this report but only the assigned officer can update it
+                    You can view this report but only the assigned officer can
+                    update it
                   </CardDescription>
                 )}
               </CardHeader>
@@ -697,7 +720,9 @@ export default function ReportDetailPage({
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => router.push(`/dashboard/evidence/new?reportId=${report.id}`)}
+                  onClick={() =>
+                    router.push(`/dashboard/evidence/new?reportId=${report.id}`)
+                  }
                   disabled={isOfficer && !isAssignedOfficer}
                 >
                   <Paperclip className="mr-2 h-4 w-4" />
@@ -727,7 +752,9 @@ export default function ReportDetailPage({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={Priority.CRITICAL}>Critical</SelectItem>
+                      <SelectItem value={Priority.CRITICAL}>
+                        Critical
+                      </SelectItem>
                       <SelectItem value={Priority.HIGH}>High</SelectItem>
                       <SelectItem value={Priority.MEDIUM}>Medium</SelectItem>
                       <SelectItem value={Priority.LOW}>Low</SelectItem>
@@ -736,7 +763,10 @@ export default function ReportDetailPage({
                   <Button
                     size="sm"
                     className="w-full"
-                    disabled={selectedPriority === report.priority || (isOfficer && !isAssignedOfficer)}
+                    disabled={
+                      selectedPriority === report.priority ||
+                      (isOfficer && !isAssignedOfficer)
+                    }
                     onClick={handlePriorityUpdate}
                   >
                     Update Priority
@@ -764,7 +794,8 @@ export default function ReportDetailPage({
                 </Button>
                 {report.status === ReportStatus.SUBMITTED && (
                   <p className="text-sm text-muted-foreground text-center">
-                    Your report is awaiting review. You'll be notified of any updates.
+                    Your report is awaiting review. You'll be notified of any
+                    updates.
                   </p>
                 )}
               </CardContent>

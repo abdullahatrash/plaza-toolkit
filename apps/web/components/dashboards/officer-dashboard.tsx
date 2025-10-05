@@ -6,9 +6,10 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
+  CardFooter,
+  CardAction
 } from '@workspace/ui/components/card';
-import { Badge } from '@workspace/ui/components/badge';
 import { Button } from '@workspace/ui/components/button';
 import {
   FileText,
@@ -23,22 +24,12 @@ import {
 } from 'lucide-react';
 import { formatRelativeTime } from '@workspace/lib/utils';
 import { Priority } from '@workspace/database';
+import { StatusBadge } from '@/lib/dashboard-utils';
 
 interface OfficerDashboardProps {
   data: any;
   userName: string;
 }
-
-const getStatusColor = (status: string) => {
-  const colors: Record<string, string> = {
-    SUBMITTED: 'bg-blue-100 text-blue-800',
-    UNDER_REVIEW: 'bg-yellow-100 text-yellow-800',
-    IN_PROGRESS: 'bg-orange-100 text-orange-800',
-    RESOLVED: 'bg-green-100 text-green-800',
-    DISMISSED: 'bg-gray-100 text-gray-800'
-  };
-  return colors[status] || 'bg-gray-100 text-gray-800';
-};
 
 const getPriorityIcon = (priority: string) => {
   switch (priority) {
@@ -58,72 +49,88 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
 
   return (
     <>
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Officer Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Good day, Officer {userName}</p>
+      {/* Welcome Section with Quick Actions */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Officer Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Good day, Officer {userName}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => router.push('/dashboard/map')}>
+            <Map className="h-4 w-4 mr-2" />
+            Explore Map
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/cases')}>
+            <Briefcase className="h-4 w-4 mr-2" />
+            Team Cases
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/evidence')}>
+            <Shield className="h-4 w-4 mr-2" />
+            Evidence
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/reports/my')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <FileText className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">My Reports</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 mb-8 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/reports/my')}>
+          <CardHeader>
+            <CardDescription>My Reports</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.myReports || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Total submitted</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Total submitted</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/reports?assigned=me')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Briefcase className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Assigned to Me</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-orange-600">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/reports?assigned=me')}>
+          <CardHeader>
+            <CardDescription>Assigned to Me</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-orange-600">
               {data?.assignedReports || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Active assignments</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Briefcase className="h-4 w-4 text-orange-600" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Active assignments</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/cases')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Shield className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Active Cases</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/cases')}>
+          <CardHeader>
+            <CardDescription>Team Cases</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.activeCases || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Open investigations</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Cases you're supporting</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Activity className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Notifications</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Notifications</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.unreadNotifications || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Unread</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Unread</div>
+          </CardFooter>
         </Card>
       </div>
 
@@ -140,13 +147,13 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
                 ([status, count]: [string, any]) => (
                   <div
                     key={status}
-                    className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/50 cursor-pointer transition-all"
+                    className="flex flex-col gap-2 p-3 rounded-md border bg-card hover:bg-accent/50 cursor-pointer transition-all"
                     onClick={() => router.push(`/dashboard/reports?status=${status}`)}
                   >
-                    <span className="text-sm font-medium">
-                      {status.replace(/_/g, ' ')}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">{count}</Badge>
+                    <div className="flex items-center justify-between">
+                      <StatusBadge status={status} size="sm" showIcon={false} />
+                      <span className="text-xl font-bold">{count}</span>
+                    </div>
                   </div>
                 )
               )}
@@ -182,32 +189,32 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
                   onClick={() => router.push(`/dashboard/reports/${report.id}`)}
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      {getPriorityIcon(report.priority)}
-                      <h4 className="font-medium truncate">{report.title}</h4>
-                    </div>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        <span className="truncate">{report.location}</span>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {formatRelativeTime(report.createdAt)}
-                      </span>
-                      {report.photos?.length > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Camera className="h-3 w-3" />
-                          {report.photos.length}
-                        </span>
-                      )}
+                    <div className="flex items-start gap-2">
+                      <div className="flex-shrink-0">
+                        {getPriorityIcon(report.priority)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium truncate">{report.title}</h4>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            <span className="truncate">{report.location}</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatRelativeTime(report.createdAt)}
+                          </span>
+                          {report.photos?.length > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Camera className="h-3 w-3" />
+                              {report.photos.length}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <Badge
-                    className={`ml-3 text-xs ${getStatusColor(report.status)}`}
-                  >
-                    {report.status.replace(/_/g, ' ')}
-                  </Badge>
+                  <StatusBadge status={report.status} size="sm" showIcon={false} />
                 </div>
               ))}
             </div>
@@ -215,68 +222,9 @@ export function OfficerDashboard({ data, userName }: OfficerDashboardProps) {
         </Card>
       )}
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks and shortcuts</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/map')}
-            >
-              <Map className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Explore Map</div>
-                <div className="text-xs text-muted-foreground mt-1">View incident map</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/reports/new')}
-            >
-              <FileText className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">New Report</div>
-                <div className="text-xs text-muted-foreground mt-1">Submit incident</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/cases')}
-            >
-              <Briefcase className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">My Cases</div>
-                <div className="text-xs text-muted-foreground mt-1">View investigations</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/evidence')}
-            >
-              <Shield className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Evidence</div>
-                <div className="text-xs text-muted-foreground mt-1">Manage evidence</div>
-              </div>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Recent Activity */}
       {data?.recentActivities && data.recentActivities.length > 0 && (
-        <Card className="mt-8">
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5" />

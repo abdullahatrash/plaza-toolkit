@@ -6,7 +6,9 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
+  CardFooter,
+  CardAction
 } from '@workspace/ui/components/card';
 import { Badge } from '@workspace/ui/components/badge';
 import { Button } from '@workspace/ui/components/button';
@@ -33,72 +35,92 @@ export function ProsecutorDashboard({ data, userName }: ProsecutorDashboardProps
 
   return (
     <>
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Prosecutor Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Welcome, Prosecutor {userName}</p>
+      {/* Welcome Section with Quick Actions */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Prosecutor Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Welcome, Prosecutor {userName}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => router.push('/dashboard/cases')}>
+            <Briefcase className="h-4 w-4 mr-2" />
+            View Cases
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/cases/calendar')}>
+            <Calendar className="h-4 w-4 mr-2" />
+            Calendar
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/reports')}>
+            <FileText className="h-4 w-4 mr-2" />
+            Reports
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/analytics')}>
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Statistics
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/cases?status=ACTIVE')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Briefcase className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Active Cases</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 mb-8 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/cases?status=ACTIVE')}>
+          <CardHeader>
+            <CardDescription>Active Cases</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.activeCases || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">With prosecutor</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">With prosecutor</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Gavel className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">In Court</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>In Court</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.inCourtCases || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Ongoing trials</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Gavel className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Ongoing trials</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/cases?status=PENDING_REVIEW')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Clock className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-orange-600">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/cases?status=PENDING_REVIEW')}>
+          <CardHeader>
+            <CardDescription>Pending Review</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-orange-600">
               {data?.pendingReview || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Need attention</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Clock className="h-4 w-4 text-orange-600" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Need attention</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/cases/calendar')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Calendar className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/cases/calendar')}>
+          <CardHeader>
+            <CardDescription>Upcoming</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.upcomingDeadlines?.length || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Court dates</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Court dates</div>
+          </CardFooter>
         </Card>
       </div>
 
@@ -150,106 +172,46 @@ export function ProsecutorDashboard({ data, userName }: ProsecutorDashboardProps
         </Card>
       )}
 
-      {/* Weekly Summary and Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>This Week's Summary</CardTitle>
-            <CardDescription>Case activity and outcomes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/50 transition-all">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="text-sm font-medium">Cases Approved</span>
-                </div>
-                <span className="text-2xl font-bold text-green-600">
-                  {data?.weeklyStats?.casesApproved || 0}
-                </span>
+      {/* Weekly Summary */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>This Week's Summary</CardTitle>
+          <CardDescription>Case activity and outcomes</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/50 transition-all">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-medium">Cases Approved</span>
               </div>
-
-              <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/50 transition-all">
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5 text-red-600" />
-                  <span className="text-sm font-medium">Cases Closed</span>
-                </div>
-                <span className="text-2xl font-bold text-red-600">
-                  {data?.weeklyStats?.casesClosed || 0}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/50 transition-all">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-medium">New Escalations</span>
-                </div>
-                <span className="text-2xl font-bold text-blue-600">
-                  {data?.weeklyStats?.newEscalations || 0}
-                </span>
-              </div>
+              <span className="text-2xl font-bold text-green-600">
+                {data?.weeklyStats?.casesApproved || 0}
+              </span>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common prosecutor tasks</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-                onClick={() => router.push('/dashboard/cases')}
-              >
-                <Briefcase className="h-8 w-8" />
-                <div className="text-center">
-                  <div className="font-semibold">View Cases</div>
-                  <div className="text-xs text-muted-foreground mt-1">All cases</div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-                onClick={() => router.push('/dashboard/cases/calendar')}
-              >
-                <Calendar className="h-8 w-8" />
-                <div className="text-center">
-                  <div className="font-semibold">Calendar</div>
-                  <div className="text-xs text-muted-foreground mt-1">Court dates</div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-                onClick={() => router.push('/dashboard/reports')}
-              >
-                <FileText className="h-8 w-8" />
-                <div className="text-center">
-                  <div className="font-semibold">Reports</div>
-                  <div className="text-xs text-muted-foreground mt-1">Evidence archive</div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-                onClick={() => router.push('/dashboard/analytics')}
-              >
-                <TrendingUp className="h-8 w-8" />
-                <div className="text-center">
-                  <div className="font-semibold">Statistics</div>
-                  <div className="text-xs text-muted-foreground mt-1">Case metrics</div>
-                </div>
-              </Button>
+            <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/50 transition-all">
+              <div className="flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-red-600" />
+                <span className="text-sm font-medium">Cases Closed</span>
+              </div>
+              <span className="text-2xl font-bold text-red-600">
+                {data?.weeklyStats?.casesClosed || 0}
+              </span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+
+            <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/50 transition-all">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                <span className="text-sm font-medium">New Escalations</span>
+              </div>
+              <span className="text-2xl font-bold text-blue-600">
+                {data?.weeklyStats?.newEscalations || 0}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 }

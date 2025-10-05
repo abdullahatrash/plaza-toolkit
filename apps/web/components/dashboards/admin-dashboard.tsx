@@ -6,7 +6,9 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
+  CardFooter,
+  CardAction
 } from '@workspace/ui/components/card';
 import { Button } from '@workspace/ui/components/button';
 import { Badge } from '@workspace/ui/components/badge';
@@ -32,76 +34,96 @@ export function AdminDashboard({ data, userName }: AdminDashboardProps) {
 
   return (
     <>
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Welcome back, {userName}</p>
+      {/* Welcome Section with Quick Actions */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Welcome back, {userName}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => router.push('/dashboard/users')}>
+            <Users className="h-4 w-4 mr-2" />
+            Manage Users
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/reports')}>
+            <FileText className="h-4 w-4 mr-2" />
+            View Reports
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/analytics')}>
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Analytics
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/settings')}>
+            <Shield className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/users')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Users className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 mb-8 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/users')}>
+          <CardHeader>
+            <CardDescription>Total Users</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.totalUsers || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Active system users</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Active system users</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/reports')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <FileText className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/reports')}>
+          <CardHeader>
+            <CardDescription>Total Reports</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.reportStats?.total || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">All incident reports</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">All incident reports</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all cursor-pointer" onClick={() => router.push('/dashboard/cases')}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Briefcase className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Active Cases</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
+        <Card className="@container/card cursor-pointer" onClick={() => router.push('/dashboard/cases')}>
+          <CardHeader>
+            <CardDescription>Active Cases</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {data?.activeCases || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Ongoing investigations</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Ongoing investigations</div>
+          </CardFooter>
         </Card>
 
-        <Card className="hover:shadow-sm transition-all">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <AlertTriangle className="h-4 w-4" />
-              <CardTitle className="text-sm font-medium">Pending Actions</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-orange-600">
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>Pending Actions</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-orange-600">
               {data?.pendingActions || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Require attention</p>
-          </CardContent>
+            </CardTitle>
+            <CardAction>
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground">Require attention</div>
+          </CardFooter>
         </Card>
       </div>
 
-      {/* System Health */}
+      {/* System Health and Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
         <Card>
           <CardHeader>
@@ -179,7 +201,7 @@ export function AdminDashboard({ data, userName }: AdminDashboardProps) {
 
       {/* Recent Activity */}
       {data?.recentActivities && data.recentActivities.length > 0 && (
-        <Card className="mb-8">
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
@@ -210,65 +232,6 @@ export function AdminDashboard({ data, userName }: AdminDashboardProps) {
           </CardContent>
         </Card>
       )}
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Administrative Actions</CardTitle>
-          <CardDescription>Common administrative tasks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/users')}
-            >
-              <Users className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Manage Users</div>
-                <div className="text-xs text-muted-foreground mt-1">User accounts</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/reports')}
-            >
-              <FileText className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">View Reports</div>
-                <div className="text-xs text-muted-foreground mt-1">All reports</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/analytics')}
-            >
-              <TrendingUp className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Analytics</div>
-                <div className="text-xs text-muted-foreground mt-1">System insights</div>
-              </div>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-3 py-8 hover:border-primary transition-all"
-              onClick={() => router.push('/dashboard/settings')}
-            >
-              <Shield className="h-8 w-8" />
-              <div className="text-center">
-                <div className="font-semibold">Settings</div>
-                <div className="text-xs text-muted-foreground mt-1">System config</div>
-              </div>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </>
   );
 }

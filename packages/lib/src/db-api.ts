@@ -222,7 +222,12 @@ export const reportApi = {
         author: true,
         assignee: true,
         photos: true,
-        case: true
+        case: true,
+        evidence: {
+          include: {
+            collector: true
+          }
+        }
       }
     });
   },
@@ -496,6 +501,41 @@ export const caseApi = {
           },
           orderBy: { createdAt: 'desc' },
           take: 20
+        },
+        _count: {
+          select: {
+            reports: true,
+            evidence: true,
+            notes: true
+          }
+        }
+      }
+    });
+  },
+
+  async findByCaseNumber(caseNumber: string) {
+    return prisma.case.findUnique({
+      where: { caseNumber },
+      include: {
+        owner: true,
+        team: true,
+        reports: {
+          include: {
+            author: true,
+            photos: true
+          }
+        },
+        evidence: {
+          include: {
+            collector: true
+          }
+        },
+        _count: {
+          select: {
+            reports: true,
+            evidence: true,
+            notes: true
+          }
         }
       }
     });
@@ -1189,5 +1229,95 @@ export const searchApi = {
     }
 
     return results;
+  }
+};
+
+// Chat API (AI XAI Feature)
+export const chatApi = {
+  async create(data: { id: string; userId: string; title: string; reportId?: string; caseId?: string }) {
+    return prisma.chat.create({
+      data: {
+        id: data.id,
+        userId: data.userId,
+        title: data.title,
+        reportId: data.reportId,
+        caseId: data.caseId,
+      }
+    });
+  },
+
+  async findById(id: string) {
+    return prisma.chat.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        report: true,
+        case: true,
+      }
+    });
+  },
+
+  async getUserChats(userId: string, limit: number = 50) {
+    return prisma.chat.findMany({
+      where: { userId },
+      include: {
+        messages: {
+          take: 1,
+          orderBy: { createdAt: 'asc' }
+        },
+        report: {
+          select: {
+            id: true,
+            title: true,
+            reportNumber: true
+          }
+        },
+        case: {
+          select: {
+            id: true,
+            title: true,
+            caseNumber: true
+          }
+        }
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: limit
+    });
+  },
+
+  async updateTitle(id: string, title: string) {
+    return prisma.chat.update({
+      where: { id },
+      data: {
+        title,
+        updatedAt: new Date()
+      }
+    });
+  },
+
+  async getMessages(chatId: string) {
+    return prisma.message.findMany({
+      where: { chatId },
+      orderBy: { createdAt: 'asc' }
+    });
+  },
+
+  async saveMessages(messages: Array<{
+    id: string;
+    chatId: string;
+    role: string;
+    parts: string;
+    attachments: string;
+  }>) {
+    return prisma.message.createMany({
+      data: messages
+    });
+  },
+
+  async deleteById(id: string) {
+    // Messages will cascade delete due to onDelete: Cascade in schema
+    return prisma.chat.delete({
+      where: { id }
+    });
   }
 };

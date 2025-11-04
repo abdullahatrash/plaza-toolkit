@@ -54,8 +54,54 @@ function LocationControl() {
   const map = useMap();
   const controlRef = useRef<HTMLDivElement | null>(null);
 
-  const handleLocate = () => {
-    map.locate({ setView: true, maxZoom: 16 });
+  const handleLocate = async () => {
+    // Try browser geolocation first
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const latlng = L.latLng(position.coords.latitude, position.coords.longitude);
+          map.setView(latlng, 16);
+          const radius = position.coords.accuracy / 2;
+          L.marker(latlng).addTo(map)
+            .bindPopup(`You are within ${radius} meters from this point`).openPopup();
+          L.circle(latlng, radius).addTo(map);
+        },
+        async (error) => {
+          // Fallback to IP-based geolocation
+          console.log('Browser geolocation failed, trying IP-based location...');
+          try {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            if (data.latitude && data.longitude) {
+              const latlng = L.latLng(data.latitude, data.longitude);
+              map.setView(latlng, 12);
+              L.marker(latlng).addTo(map)
+                .bindPopup(`Approximate location based on IP: ${data.city}, ${data.country_name}`).openPopup();
+            } else {
+              alert('Unable to determine location');
+            }
+          } catch (err) {
+            alert('Location access denied or unavailable');
+          }
+        }
+      );
+    } else {
+      // No geolocation support, use IP-based directly
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        if (data.latitude && data.longitude) {
+          const latlng = L.latLng(data.latitude, data.longitude);
+          map.setView(latlng, 12);
+          L.marker(latlng).addTo(map)
+            .bindPopup(`Approximate location based on IP: ${data.city}, ${data.country_name}`).openPopup();
+        } else {
+          alert('Unable to determine location');
+        }
+      } catch (err) {
+        alert('Location service unavailable');
+      }
+    }
   };
 
   useEffect(() => {
@@ -71,20 +117,7 @@ function LocationControl() {
     const control = new CustomControl({ position: 'topleft' });
     control.addTo(map);
 
-    map.on('locationfound', (e) => {
-      const radius = e.accuracy / 2;
-      L.marker(e.latlng).addTo(map)
-        .bindPopup(`You are within ${radius} meters from this point`).openPopup();
-      L.circle(e.latlng, radius).addTo(map);
-    });
-
-    map.on('locationerror', (e) => {
-      alert('Location access denied or unavailable');
-    });
-
     return () => {
-      map.off('locationfound');
-      map.off('locationerror');
       control.remove();
     };
   }, [map]);
